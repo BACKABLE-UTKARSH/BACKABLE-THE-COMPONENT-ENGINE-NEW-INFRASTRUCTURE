@@ -36,13 +36,6 @@ import aiohttp
 from typing import Optional, Dict, Any
 import platform
 from contextlib import asynccontextmanager
-from collections import defaultdict
-import threading
-
-# Google GenAI SDK for Vertex AI (new architecture - primary method)
-from google import genai
-from google.oauth2 import service_account
-
 # ======================================================
 #                 Configuration
 # ======================================================
@@ -54,6 +47,12 @@ if platform.system() == 'Windows':
 # Notification configuration
 NOTIFICATION_API_URL = "https://philotimo-backend-staging.azurewebsites.net/send-notification"
 NOTIFICATION_TIMEOUT = 10  # seconds
+
+# Indexer configuration
+INDEXER_API_BASE_URL = "https://autoindexerwebapp.azurewebsites.net"
+INDEXER_TIMEOUT = 300  # 5 minutes timeout for indexer operations
+INDEXER_RETRY_ATTEMPTS = 3
+INDEXER_RETRY_DELAY = 30  # seconds
 
 # Database Configuration
 COMPONENT_DB_CONFIG = {
@@ -74,31 +73,34 @@ USER_DB_CONFIG = {
     "sslmode": "require"
 }
 
-# Azure Storage and other configs - NEW UNIFIED ARCHITECTURE
-AZURE_STORAGE_CONNECTION_STRING = os.getenv(
-    'AZURE_STORAGE_CONNECTION_STRING',
-    "DefaultEndpointsProtocol=https;AccountName=backableunifiedstoragev1;AccountKey=YOUR_KEY_HERE;EndpointSuffix=core.windows.net"
+AZURE_STORAGE_CONNECTION_STRING = (
+    "DefaultEndpointsProtocol=https;"
+    "AccountName=backablerag;"
+    "AccountKey=dvwrkrp4bkUzm1rZIdhQAXCv7e88iVdPbxFt3ziB0OabCi3r+CjGbLsSUJBH0Jgzkg4X5b/"
+    "UgaTg+ASt8LXNOg==;EndpointSuffix=core.windows.net"
 )
 
-ONBOARDING_DB_HOST = os.getenv('ONBOARDING_DB_HOST', 'memberchat-db.postgres.database.azure.com')
-ONBOARDING_DB_NAME = os.getenv('ONBOARDING_DB_NAME', 'BACKABLE-GOOGLE-RAG')
-ONBOARDING_DB_USER = os.getenv('ONBOARDING_DB_USER', 'backable')
-ONBOARDING_DB_PASSWORD = os.getenv('ONBOARDING_DB_PASSWORD', 'YOUR_PASSWORD_HERE')
-ONBOARDING_DB_PORT = int(os.getenv('ONBOARDING_DB_PORT', '5432'))
+ONBOARDING_DB_HOST = "memberchat-db.postgres.database.azure.com"
+ONBOARDING_DB_NAME = "onboarding"
+ONBOARDING_DB_USER = "backable"
+ONBOARDING_DB_PASSWORD = "Utkar$h007"
+ONBOARDING_DB_PORT = 5432
 
 
-# Gemini 2.5 Pro Configuration - Load from environment variables (matching Analyst Engine pattern)
-# Load individual API keys from environment (GEMINI_API_KEY_1, GEMINI_API_KEY_2, etc.)
-GEMINI_API_KEYS = []
-for i in range(1, 11):  # Load up to 10 API keys
-    key = os.getenv(f'GEMINI_API_KEY_{i}')
-    if key:
-        GEMINI_API_KEYS.append(key)
-
-# Fallback to dummy keys if not set (will fail gracefully)
-if not GEMINI_API_KEYS:
-    GEMINI_API_KEYS = ["YOUR_API_KEY_1", "YOUR_API_KEY_2", "YOUR_API_KEY_3"]
-    logging.warning("⚠️ GEMINI_API_KEYS not found in environment variables!")
+# Gemini 2.5 Pro Configuration - UPDATED KEYS
+# Gemini 2.5 Pro Configuration - UPDATED COMPONENT KEYS
+GEMINI_API_KEYS = [
+    "AIzaSyDQMjjG6_wFs_apYazj4ckA1QjcZFjZ9wM",  # Back_Comp01
+    "AIzaSyAz5iBcjTraTAl_sLPeXmumPiqQoQVUNlw",  # Back_Comp02
+    "AIzaSyB7AjOGYk9njDchqXE2US3zTF0FBQ4jQNo",  # Back_Comp03
+    "AIzaSyBaUbkmYMqq90f2DYra72hcrZMuCqhTQOo",  # Back_Comp04
+    "AIzaSyCnLKkobGdgHlDXHb475hto2uyeDHnlTZw",  # Back_Comp05
+    "AIzaSyD_KUDWt2qk1b5DxqSDXLE7_7z0WjDmk5o",  # Back_Comp06
+    "AIzaSyD_KUDWt2qk1b5DxqSDXLE7_7z0WjDmk5o",  # Back_Comp07 (Note: Same as 06)
+    "AIzaSyANffg2QDSFQxsVekVX2qpOyF0ilPINB3k",  # Back_Comp08
+    "AIzaSyAfp3rQfAq1u0BXrcfKfGJhjKwUHF_yBFo",  # Back_Comp09
+    "AIzaSyDqPN-w9Om-yYZDUH4vMuwgM3QvJllkkUs"   # Back_Comp10
+]
 
 # Add this global dictionary after your GEMINI_API_KEYS list
 api_key_health = {}
@@ -199,129 +201,7 @@ def get_api_key_status_summary() -> str:
     
     return f"Healthy: {healthy_count}, Cooling: {cooling_down}, Failed: {failed_count}"
 
-# ======================================================
-#           Vertex AI Configuration (Primary Method)
-# ======================================================
-VERTEX_PROJECT_ID = "backable-machine-learning-apis"
-VERTEX_LOCATION = "us-central1"
-USE_VERTEX_AI = True  # Primary method - will fallback to API keys if fails
 
-# API Key Management Variables
-api_key_stats = defaultdict(lambda: {"requests": 0, "failures": 0, "last_used": 0, "cooldown_until": 0})
-api_key_lock = threading.Lock()
-
-# ======================================================
-#           Vertex AI Initialization
-# ======================================================
-
-def initialize_vertex_ai_client():
-    """
-    Initialize Google GenAI client for Vertex AI.
-    Supports both file-based and environment variable credentials.
-    Returns None if initialization fails (will use API keys fallback).
-    """
-    try:
-        # Try loading credentials from environment variable first (Azure deployment)
-        creds_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
-
-        if creds_json:
-            logging.info("Loading Vertex AI credentials from environment variable")
-            import tempfile
-            creds_dict = json.loads(creds_json)
-            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as temp_file:
-                json.dump(creds_dict, temp_file)
-                temp_path = temp_file.name
-
-            credentials = service_account.Credentials.from_service_account_file(
-                temp_path,
-                scopes=['https://www.googleapis.com/auth/cloud-platform']
-            )
-            os.unlink(temp_path)
-        else:
-            # Fall back to file-based credentials (local development)
-            creds_file = "vertex-key.json"
-            if os.path.exists(creds_file):
-                logging.info(f"Loading Vertex AI credentials from {creds_file}")
-                credentials = service_account.Credentials.from_service_account_file(
-                    creds_file,
-                    scopes=['https://www.googleapis.com/auth/cloud-platform']
-                )
-            else:
-                logging.warning("No Vertex AI credentials found - will use API keys fallback")
-                return None
-
-        # Initialize GenAI client
-        client = genai.Client(
-            vertexai=True,
-            credentials=credentials,
-            project=VERTEX_PROJECT_ID,
-            location=VERTEX_LOCATION
-        )
-
-        logging.info(f"✅ Vertex AI GenAI client initialized successfully (Project: {VERTEX_PROJECT_ID})")
-        return client
-
-    except Exception as e:
-        logging.warning(f"⚠️ Vertex AI initialization failed: {str(e)} - Will use API keys fallback")
-        return None
-
-# Initialize Vertex AI client at startup
-vertex_ai_client = initialize_vertex_ai_client() if USE_VERTEX_AI else None
-
-# ======================================================
-#           VERTEX AI REQUEST FUNCTION
-# ======================================================
-
-def try_vertex_ai_component_request(
-    enhanced_prompt: str,
-    temperature: float,
-    max_tokens: int,
-    start_time: float
-) -> Optional[Dict]:
-    """
-    Try making request using Vertex AI (PRIMARY METHOD for Component Engine).
-    Returns response dict if successful, None if fails.
-    """
-    if not vertex_ai_client:
-        logging.info("Vertex AI client not available - using API keys fallback")
-        return None
-
-    try:
-        logging.info("🚀 Trying Vertex AI (Primary Method for Component Analysis)")
-
-        # Call Vertex AI using GenAI SDK with gemini-2.5-pro
-        response = vertex_ai_client.models.generate_content(
-            model="gemini-2.5-pro",
-            contents=enhanced_prompt,
-            config={
-                "temperature": temperature,
-                "max_output_tokens": max_tokens,
-                "top_p": 0.95,
-            }
-        )
-
-        # Extract content
-        if response and response.candidates and len(response.candidates) > 0:
-            content = response.candidates[0].content.parts[0].text if response.candidates[0].content.parts else ""
-            token_count = response.usage_metadata.total_token_count if response.usage_metadata else 0
-            request_time = time.time() - start_time
-
-            logging.info(f"✅ Vertex AI SUCCESS - {len(content.split())} words, {token_count} tokens, {request_time:.2f}s")
-
-            return {
-                "success": True,
-                "content": content,
-                "tokens": token_count,
-                "time": request_time,
-                "model": "gemini-2.5-pro-vertex"
-            }
-        else:
-            logging.warning("⚠️ Vertex AI returned empty response - falling back to API keys")
-            return None
-
-    except Exception as e:
-        logging.warning(f"⚠️ Vertex AI failed: {str(e)} - Falling back to API keys")
-        return None
 
 # Production-optimized settings
 MAX_RETRIES = 10
@@ -346,346 +226,259 @@ PHASE_MAPPING = {
 }
 
 # ======================================================
-#           PERSONALIZED NOTIFICATION SERVICE
+#           Notification Functions
 # ======================================================
 
-class PersonalizedNotificationService:
-    """
-    Enhanced notification service with personalized, PROFESSIONAL messages using Vertex AI + Gemini
-    Focuses on value delivery and Backable Mind intelligence for Component Engine
-    """
+async def send_component_notification(user_id: str, title: str, body: str, data_type: str = "notification"):
+    """Send notification to user for component assessment"""
+    try:
+        payload = {
+            "userId": int(user_id),
+            "title": title,
+            "body": body,
+            "data": {
+                "type": data_type,
+                "timestamp": str(int(datetime.now().timestamp()))
+            }
+        }
+        
+        logging.info(f"🔔 Sending component notification to user {user_id}: {title}")
+        
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=NOTIFICATION_TIMEOUT)) as session:
+            async with session.post(
+                NOTIFICATION_API_URL,
+                json=payload,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                
+                if response.status == 200:
+                    result = await response.text()
+                    logging.info(f"✅ Component notification sent successfully to user {user_id}")
+                    return True, result
+                else:
+                    error_text = await response.text()
+                    logging.error(f"❌ Component notification failed for user {user_id}: {response.status} - {error_text}")
+                    return False, f"HTTP {response.status}: {error_text}"
+                    
+    except Exception as e:
+        logging.error(f"❌ Component notification error for user {user_id}: {str(e)}")
+        return False, str(e)
 
-    def __init__(self, gemini_api_key: str):
-        self.gemini_api_key = gemini_api_key
-        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models"
-        self.model = "gemini-2.5-pro"
+def send_component_notification_sync(user_id: str, title: str, body: str, data_type: str = "notification"):
+    """Synchronous wrapper for sending component notifications"""
+    try:
+        if platform.system() == 'Windows':
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(
+                send_component_notification(user_id, title, body, data_type)
+            )
+        finally:
+            loop.close()
+            
+    except Exception as e:
+        logging.error(f"❌ Sync component notification error: {str(e)}")
+        return False, str(e)
 
-        # Professional fallback messages (used if generation fails)
-        self.fallback_messages = {
+async def generate_personalized_component_message(user_profile: Dict, stage: str, progress_data: Dict = None) -> str:
+    """Generate personalized, hilarious component message using Gemini AI"""
+    try:
+        # Extract user context
+        business_name = user_profile.get('business_name', 'Your Business')
+        username = user_profile.get('username', 'Entrepreneur')
+        industry = user_profile.get('industry', 'Business')
+        team_size = user_profile.get('team_size', 'Unknown')
+        
+        # Create stage-specific prompts for components
+        if stage == "start":
+            prompt = f"""
+            Create a HILARIOUS, personalized notification for {username} from {business_name} in the {industry} industry.
+            They just started their business COMPONENT assessment (focus on business systems, processes, and infrastructure).
+            
+            Make it:
+            - FUNNY and witty about business components/systems
+            - Include a joke about {industry} business components
+            - Reference {business_name} humorously
+            - Focus on SYSTEMS, PROCESSES, INFRASTRUCTURE
+            - 1-2 sentences max with component emojis (🔧⚙️🛠️🏗️)
+            - Make them laugh about their business components!
+            """
+        
+        elif stage == "middle":
+            components_done = progress_data.get('components_completed', 5) if progress_data else 5
+            total_components = progress_data.get('total_components', 9) if progress_data else 9
+            
+            prompt = f"""
+            Create a HILARIOUS mid-progress notification for {username} from {business_name}.
+            They're {components_done}/{total_components} components through their assessment.
+            
+            Make it:
+            - FUNNY and encouraging about component analysis progress
+            - Reference their {industry} business systems humorously
+            - Focus on COMPONENTS, SYSTEMS, INFRASTRUCTURE
+            - 1-2 sentences max with component emojis
+            - Make them laugh and feel motivated about their components!
+            """
+        
+        elif stage == "complete":
+            total_words = progress_data.get('total_words', 12000) if progress_data else 12000
+            
+            prompt = f"""
+            Create a HILARIOUS completion notification for {username} from {business_name}.
+            Their business COMPONENT blueprint is complete with {total_words:,} words.
+            
+            Make it:
+            - FUNNY and celebratory about their component blueprint
+            - Reference {industry} component success humorously
+            - Focus on BLUEPRINT, SYSTEMS, COMPONENTS completion
+            - 1-2 sentences max with celebration + component emojis
+            - Make them feel like a system master!
+            """
+        
+        # Use first available API key for notifications
+        gemini_api_key = GEMINI_API_KEYS[0]
+        
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent"
+            
+            payload = {
+                "contents": [{
+                    "role": "user",
+                    "parts": [{"text": prompt}]
+                }],
+                "generationConfig": {
+                    "temperature": 1.0,
+                    "maxOutputTokens": 150,
+                    "topP": 0.95,
+                    "candidateCount": 1
+                }
+            }
+            
+            params = {'key': gemini_api_key}
+            
+            async with session.post(url, json=payload, params=params) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if 'candidates' in data and len(data['candidates']) > 0:
+                        candidate = data['candidates'][0]
+                        
+                        content = ""
+                        try:
+                            if 'content' in candidate and 'parts' in candidate['content']:
+                                content = candidate['content']['parts'][0]['text']
+                            elif 'text' in candidate:
+                                content = candidate['text']
+                            else:
+                                content = str(candidate.get('content', candidate))
+                        except Exception as e:
+                            logging.warning(f"Content extraction issue: {e}")
+                            content = str(candidate)
+                        
+                        if content:
+                            content = content.strip().replace('"', '').replace("'", "'")
+                            if any(char in content for char in ['🔧', '⚙️', '🛠️', '🏗️', '🔥', '🚀', '🎉']) or len(content.split()) > 3:
+                                if not any(tech in content.lower() for tech in ['role', 'model', 'parts', 'content']):
+                                    logging.info(f"🎭 Generated component {stage} message for {username}")
+                                    return content
+    
+    except Exception as e:
+        logging.error(f"❌ Error generating component message: {str(e)}")
+    
+    # Fallback messages for components
+    fallback_messages = {
+        "start": [
+            f"🔧 {business_name}'s components are about to get analyzed! {username}, prepare for systematic insights!",
+            f"⚙️ Breaking: {username}'s business systems are being decoded! Warning: May cause efficiency!",
+            f"🛠️ Plot twist: {business_name}'s infrastructure is about to become legendary!"
+        ],
+        "middle": [
+            f"🤯 Halfway there! {username}'s components are more sophisticated than expected!",
+            f"🔧 {business_name}'s systems are breaking our AI (in a good way)! 50% complete!",
+            f"📊 Update: {username}'s component complexity is mind-blowing!"
+        ],
+        "complete": [
+            f"🎉 BOOM! {username}'s component blueprint is ready! {business_name} = optimized!",
+            f"✨ Mission accomplished! {business_name} just became more systematic than Swiss clockwork!",
+            f"🚀 {username} is officially a component master! Blueprint ready!"
+        ]
+    }
+    
+    return random.choice(fallback_messages.get(stage, fallback_messages["start"]))
+
+async def send_personalized_component_notification(user_id: str, user_profile: Dict, stage: str, progress_data: Dict = None):
+    """Send personalized component notification"""
+    try:
+        # Generate personalized message
+        message = await generate_personalized_component_message(user_profile, stage, progress_data)
+        
+        # Create titles for components
+        username = user_profile.get('username', 'Entrepreneur')
+        business_name = user_profile.get('business_name', 'Your Business')
+        
+        funny_titles = {
             "start": [
-                "Your Component Engine assessment has begun. This analysis will expand your Backable Mind with strategic insights about your business systems, processes, and operational infrastructure.",
-                "Component Engine analysis initiated. Your business architecture is being examined to provide comprehensive operational intelligence.",
-                "Analysis started for your business components. The Component Engine is now evaluating your systems, processes, and infrastructure across all operational dimensions."
+                f"🚀 {username}, Component Time!",
+                f"🔧 {business_name} Analysis!",
+                f"⚙️ System Assessment Started!"
             ],
             "middle": [
-                "Your Component Engine analysis is progressing well. We're currently examining your business systems and operational processes to build comprehensive operational intelligence.",
-                "Analysis update: The Component Engine has completed multiple sections of your systems assessment. Operational insights are being compiled across all components.",
-                "Progress update on your component analysis. Key areas including systems architecture, process efficiency, and infrastructure have been examined."
+                f"🔥 {username} Crushing Components!",
+                f"🤯 {business_name} Halfway There!",
+                f"📊 Component Progress Update!"
             ],
             "complete": [
-                "Your Component Engine analysis is now complete and has expanded your Backable Mind with comprehensive operational intelligence. Head to your dashboard to explore component insights.",
-                "Component Engine analysis complete. Your Backable Mind now contains detailed systems architecture, process efficiency recommendations, and infrastructure insights. Visit your dashboard to explore.",
-                "Analysis finished. Your Backable Mind has been enhanced with operational intelligence covering all key business components. Access your dashboard now to review recommendations."
+                f"🎉 {username}, Components Done!",
+                f"✨ {business_name} Blueprint Ready!",
+                f"🚀 Component Success!"
             ]
         }
+        
+        title = random.choice(funny_titles[stage])
+        
+        # Send notification
+        success, result = await send_component_notification(user_id, title, message, "notification")
+        
+        if success:
+            logging.info(f"🎭 Sent component {stage} notification to user {user_id}")
+        else:
+            logging.error(f"❌ Failed to send component notification: {result}")
+        
+        return success, message
+        
+    except Exception as e:
+        logging.error(f"❌ Error sending component notification: {str(e)}")
+        return False, str(e)
 
-    async def generate_personalized_message(self, user_profile: Dict, stage: str, progress_data: Dict = None) -> str:
-        """
-        Generate professional, value-focused notification message using Vertex AI (primary) or Gemini API (fallback)
-        Focuses on how Component Engine makes Backable Mind smarter with operational intelligence
-        """
+def send_component_notification_background(user_id: str, user_profile: Dict, stage: str, progress_data: Dict = None):
+    """Send component notification in background thread"""
+    def notification_worker():
         try:
-            # Extract user context
-            business_name = user_profile.get('business_name', 'Your Business')
-            username = user_profile.get('username', 'Entrepreneur')
-            industry = user_profile.get('industry', 'Business')
-            team_size = user_profile.get('team_size', 'Unknown')
-
-            # Create stage-specific professional prompts focused on Backable Mind value
-            if stage == "start":
-                prompt = f"""
-                Create a professional, value-focused notification for {username} from {business_name} in the {industry} industry.
-                They just started their Component Engine operational assessment (systems, processes, and infrastructure analysis).
-
-                Make it:
-                - Professional and encouraging
-                - Focus on how this analysis will make their Backable Mind smarter with operational intelligence
-                - Explain the value they'll receive (systems insights, process optimization, infrastructure recommendations)
-                - Reference their business name ({business_name}) naturally
-                - 2-3 sentences max
-                - NO emojis
-                - Sound like a trusted operational advisor
-                - Emphasize comprehensive operational intelligence and data-driven insights
-
-                Example style:
-                "Hi {username}, your Component Engine operational assessment has begun. This analysis of {business_name} will expand your Backable Mind with strategic insights about your business systems, processes, and infrastructure in the {industry} industry. The system is now building comprehensive operational recommendations to enhance your operational efficiency."
-
-                Be professional, value-focused, and clear about the operational benefit.
-                """
-
-            elif stage == "middle":
-                sections_done = progress_data.get('sections_completed', 5) if progress_data else 5
-                total_sections = progress_data.get('total_sections', 9) if progress_data else 9
-
-                prompt = f"""
-                Create a professional mid-progress notification for {username} from {business_name}.
-                They're {sections_done}/{total_sections} sections through their Component Engine operational assessment.
-
-                Make it:
-                - Professional and informative
-                - Highlight what operational aspects are being analyzed
-                - Focus on how each section adds operational intelligence to their Backable Mind
-                - Mention specific value being created (systems insights, process efficiency, infrastructure optimization)
-                - 2-3 sentences max
-                - NO emojis
-                - Sound like an operational consultant providing updates
-                - Emphasize growing operational intelligence
-
-                Example style:
-                "Hi {username}, your Component Engine is progressing well ({sections_done}/{total_sections} sections complete). We're currently analyzing your business systems, operational processes, and infrastructure to build comprehensive operational intelligence for {business_name} in the {industry} space. Each section is adding operational insights to your Backable Mind, revealing optimization opportunities and efficiency improvements."
-
-                Be professional, specific about progress, and value-focused on operational intelligence.
-                """
-
-            elif stage == "complete":
-                total_words = progress_data.get('total_words', 12000) if progress_data else 12000
-
-                prompt = f"""
-                Create a professional completion notification for {username} from {business_name}.
-                Their Component Engine operational assessment is complete with {total_words:,} words of operational insights.
-
-                Make it:
-                - Professional and celebratory in a business-appropriate way
-                - Focus on how their Backable Mind is now smarter with comprehensive operational intelligence
-                - Clearly tell them what they can do next (visit dashboard, explore operational insights)
-                - Explain how this adds value with systems, processes, and infrastructure recommendations
-                - 2-3 sentences max
-                - NO emojis
-                - Sound like an operational advisor delivering valuable intelligence
-                - Emphasize actionable next steps and enhanced operational decision-making
-
-                Example style:
-                "Hi {username}, your Component Engine operational assessment is now complete and has expanded your Backable Mind with {total_words:,} words of comprehensive operational intelligence for {business_name}. Your dashboard now contains systems architecture insights, process efficiency recommendations, and infrastructure optimization strategies in the {industry} space. Head to your dashboard to explore these operational insights and leverage them for your business optimization."
-
-                Be professional, action-oriented, and emphasize the operational value delivered.
-                """
-
-            # ===================================================================
-            # STEP 1: TRY VERTEX AI FIRST (PRIMARY METHOD)
-            # ===================================================================
-            if vertex_ai_client:
-                try:
-                    logging.info("🚀 Trying Vertex AI for component notification message")
-                    response = vertex_ai_client.models.generate_content(
-                        model="gemini-2.5-pro",
-                        contents=prompt,
-                        config={
-                            "temperature": 1.0,
-                            "max_output_tokens": 1000,
-                            "top_p": 0.95,
-                        }
-                    )
-
-                    if response and response.candidates and len(response.candidates) > 0:
-                        content = response.candidates[0].content.parts[0].text if response.candidates[0].content.parts else ""
-
-                        # Validate it's a proper professional message
-                        if len(content.split()) > 10:
-                            if not any(tech_indicator in content.lower() for tech_indicator in ['role', 'model', 'parts', 'content', 'candidate', 'response']):
-                                logging.info(f"✅ Vertex AI component notification for {username}: {stage}")
-                                return content
-
-                except Exception as e:
-                    logging.warning(f"⚠️ Vertex AI notification failed: {str(e)} - Falling back to API key")
-
-            # ===================================================================
-            # STEP 2: FALLBACK TO GEMINI API KEY
-            # ===================================================================
-            logging.info("🔄 Using Gemini API key for component notification")
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
-                url = f"{self.base_url}/{self.model}:generateContent"
-
-                payload = {
-                    "contents": [{
-                        "role": "user",
-                        "parts": [{"text": prompt}]
-                    }],
-                    "generationConfig": {
-                        "temperature": 1.0,
-                        "maxOutputTokens": 1000,
-                        "topP": 0.95,
-                    }
-                }
-
-                params = {'key': self.gemini_api_key}
-
-                async with session.post(url, json=payload, params=params) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        if 'candidates' in data and len(data['candidates']) > 0:
-                            candidate = data['candidates'][0]
-
-                            content = ""
-                            try:
-                                if 'content' in candidate and 'parts' in candidate['content']:
-                                    content = candidate['content']['parts'][0]['text']
-                                elif 'text' in candidate:
-                                    content = candidate['text']
-                            except Exception as e:
-                                logging.warning(f"Content extraction issue: {e}")
-
-                            if content and len(content.split()) > 10:
-                                if not any(tech in content.lower() for tech in ['role', 'model', 'parts', 'content']):
-                                    logging.info(f"✅ Gemini API component notification for {username}: {stage}")
-                                    return content.strip()
-
-        except Exception as e:
-            logging.error(f"❌ Error generating component notification message: {str(e)}")
-
-        return random.choice(self.fallback_messages[stage])
-
-    @staticmethod
-    async def send_notification(user_id: str, title: str, body: str, data_type: str = "notification", save_to_db: bool = False, report_id: str = None, business_name: str = None):
-        """
-        Send notification to user with optional database persistence
-        FIXED for Windows compatibility
-        """
-        try:
-            from datetime import timedelta
-
-            payload = {
-                "userId": int(user_id),
-                "title": title,
-                "body": body,
-                "data": {
-                    "type": data_type,
-                    "timestamp": str(int(datetime.now().timestamp()))
-                }
-            }
-
-            # Add enhanced payload and DB persistence for completion notification
-            if save_to_db and report_id:
-                payload["saveToDb"] = True
-                payload["expiresAt"] = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
-                payload["data"]["screen"] = "ComponentReport"
-                payload["data"]["reportId"] = report_id
-
-                # IMPORTANT: payload must be inside data object for proper handling
-                payload["data"]["payload"] = {
-                    "type": "ai_report_complete",
-                    "params": {
-                        "reportId": report_id,
-                        "reportTitle": "Component Intelligence Report",
-                        "reportType": "comprehensive_component",
-                        "userId": int(user_id),
-                        "businessName": business_name or "Your Business",
-                        "completionStatus": "success",
-                        "sections": 9,
-                        "generatedAt": datetime.now().isoformat()
-                    },
-                    "actionType": "navigate",
-                    "screen": "ComponentReport",
-                    "url": f"/component/{report_id}"
-                }
-
-            logging.info(f"🔔 Sending professional component notification to user {user_id}: {title} (saveToDb: {save_to_db})")
-
-            # FIXED: Use TCPConnector to avoid aiodns issues on Windows
-            connector = aiohttp.TCPConnector(use_dns_cache=False) if platform.system() == 'Windows' else None
-
-            async with aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=NOTIFICATION_TIMEOUT),
-                connector=connector
-            ) as session:
-                async with session.post(
-                    NOTIFICATION_API_URL,
-                    json=payload,
-                    headers={"Content-Type": "application/json"}
-                ) as response:
-
-                    if response.status == 200:
-                        result = await response.text()
-                        logging.info(f"✅ Professional component notification sent successfully to user {user_id}")
-                        return True, result
-                    else:
-                        error_text = await response.text()
-                        logging.error(f"❌ Component notification failed for user {user_id}: {response.status} - {error_text}")
-                        return False, f"HTTP {response.status}: {error_text}"
-
-        except Exception as e:
-            logging.error(f"❌ Component notification error for user {user_id}: {str(e)}")
-            return False, str(e)
-
-    async def send_personalized_notification(self, user_id: str, user_profile: Dict, stage: str, progress_data: Dict = None, report_id: str = None):
-        """
-        Send personalized professional component notification for specific stage
-        """
-        try:
-            # Generate personalized professional message
-            message = await self.generate_personalized_message(user_profile, stage, progress_data)
-
-            # Create professional titles for component analysis
-            username = user_profile.get('username', 'Entrepreneur')
-            business_name = user_profile.get('business_name', 'Your Business')
-
-            professional_titles = {
-                "start": [
-                    f"Component Engine - Analysis Started",
-                    f"{business_name} - Operational Assessment Beginning",
-                    f"Component Engine Assessment - {username}",
-                    f"{business_name} - Systems Intelligence Analysis",
-                    f"Operational Analysis Initiated"
-                ],
-                "middle": [
-                    f"Component Engine - Progress Update",
-                    f"{business_name} - Analysis Progressing",
-                    f"Operational Assessment Update - {username}",
-                    f"{business_name} - Systems Analysis In Progress",
-                    f"Your Component Engine Progress"
-                ],
-                "complete": [
-                    f"Component Engine - Analysis Complete",
-                    f"{business_name} - Operational Intelligence Ready",
-                    f"Your Component Analysis is Complete",
-                    f"{business_name} - Systems Insights Available",
-                    f"Component Engine Assessment Complete"
-                ]
-            }
-
-            title = random.choice(professional_titles[stage])
-
-            # For completion notifications, save to database
-            save_to_db = (stage == "complete")
-
-            # Send notification with DB persistence for completion
-            success, result = await self.send_notification(user_id, title, message, "notification", save_to_db, report_id, business_name)
-
-            if success:
-                logging.info(f"✅ Sent professional {stage} component notification to user {user_id}")
-            else:
-                logging.error(f"❌ Failed to send professional notification: {result}")
-
-            return success, message
-
-        except Exception as e:
-            logging.error(f"❌ Error sending professional component notification: {str(e)}")
-            return False, str(e)
-
-    @staticmethod
-    def send_personalized_notification_sync(user_id: str, user_profile: Dict, stage: str, progress_data: Dict = None, gemini_api_key: str = None, report_id: str = None):
-        """
-        Synchronous wrapper for sending personalized professional component notifications
-        FIXED for Windows compatibility
-        """
-        try:
-            # FIXED: Handle Windows event loop policy BEFORE creating new loop
             if platform.system() == 'Windows':
                 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-            # Create new loop after setting policy
+            
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
-                service = PersonalizedNotificationService(gemini_api_key or GEMINI_API_KEYS[0])
-                return loop.run_until_complete(
-                    service.send_personalized_notification(user_id, user_profile, stage, progress_data, report_id)
+                success, message = loop.run_until_complete(
+                    send_personalized_component_notification(user_id, user_profile, stage, progress_data)
                 )
+                
+                if success:
+                    logging.info(f"🎭 Background component {stage} notification sent to user {user_id}")
+                else:
+                    logging.warning(f"⚠️ Background component {stage} notification failed for user {user_id}: {message}")
+                    
             finally:
                 loop.close()
-
+                
         except Exception as e:
-            logging.error(f"❌ Sync component notification error: {str(e)}")
-            return False, str(e)
+            logging.error(f"❌ Background component notification error for user {user_id}: {str(e)}")
+    
+    # Start in background thread
+    Thread(target=notification_worker, daemon=True).start()
 
 # ======================================================
 #           Gemini AI Integration
@@ -1680,8 +1473,8 @@ def get_azure_container_name(user_id: str) -> str:
             cur.execute(sql, (user_id,))
             row = cur.fetchone()
             if not row:
-                logging.warning(f"No container found for user_id={user_id}, using default container 'unified-clients-prod'")
-                return "unified-clients-prod"  # Updated to new unified architecture container
+                logging.warning(f"No container found for user_id={user_id}, using default container 'backablerag'")
+                return "backablerag"
 
             container_name = row[0]
             logging.info(f"Found container for user_id={user_id}: {container_name}")
@@ -1689,49 +1482,7 @@ def get_azure_container_name(user_id: str) -> str:
 
     except Exception as e:
         logging.error(f"Error retrieving container from DB: {str(e)}")
-        return "unified-clients-prod"  # Updated to new unified architecture container
-
-    finally:
-        if conn:
-            conn.close()
-
-def get_client_folder_name(user_id: str) -> str:
-    """
-    Get the client's folder name from database.
-    Returns folder_name like '666-tim' from client_onboarding table.
-    This ensures component reports go to: {container}/{client_folder}/the component engine report/
-    """
-    conn = None
-    try:
-        conn = psycopg2.connect(
-            host=ONBOARDING_DB_HOST,
-            dbname=ONBOARDING_DB_NAME,
-            user=ONBOARDING_DB_USER,
-            password=ONBOARDING_DB_PASSWORD,
-            port=ONBOARDING_DB_PORT
-        )
-        conn.autocommit = True
-
-        with conn.cursor() as cur:
-            sql = """
-                SELECT folder_name
-                FROM client_onboarding
-                WHERE client_id = %s
-                LIMIT 1
-            """
-            cur.execute(sql, (user_id,))
-            row = cur.fetchone()
-            if not row:
-                logging.warning(f"No folder_name found for user_id={user_id}, using default '{user_id}-unknown'")
-                return f"{user_id}-unknown"
-
-            folder_name = row[0]
-            logging.info(f"Found folder_name for user_id={user_id}: {folder_name}")
-            return folder_name
-
-    except Exception as e:
-        logging.error(f"Error retrieving folder_name from DB: {str(e)}")
-        return f"{user_id}-unknown"
+        return "backablerag"
 
     finally:
         if conn:
@@ -9312,10 +9063,8 @@ def generate_comprehensive_component_report(complete_raw_data: Dict, report_id: 
     # Component notification tracking
     notifications_sent = {"start": False, "middle": False, "complete": False}
     
-    # 🔔 NOTIFICATION 1: START - Personalized professional component start message
-    Thread(target=lambda: PersonalizedNotificationService.send_personalized_notification_sync(
-        user_id, user_profile, "start", None, GEMINI_API_KEYS[0]
-    ), daemon=True).start()
+    # 🔔 NOTIFICATION 1: START - Personalized component start message
+    send_component_notification_background(user_id, user_profile, "start")
     notifications_sent["start"] = True
     
     for report_attempt in range(max_report_retries):
@@ -9387,13 +9136,11 @@ def generate_comprehensive_component_report(complete_raw_data: Dict, report_id: 
                             # 🔔 NOTIFICATION 2: MIDDLE - Smart check for ~50% completion
                             if not notifications_sent["middle"] and completion_percentage >= 45 and completion_percentage <= 65:
                                 progress_data = {
-                                    'sections_completed': total_completed,
-                                    'total_sections': len(section_items),
+                                    'components_completed': total_completed,
+                                    'total_components': len(section_items),
                                     'progress_percentage': completion_percentage
                                 }
-                                Thread(target=lambda: PersonalizedNotificationService.send_personalized_notification_sync(
-                                    user_id, user_profile, "middle", progress_data, GEMINI_API_KEYS[0]
-                                ), daemon=True).start()
+                                send_component_notification_background(user_id, user_profile, "middle", progress_data)
                                 notifications_sent["middle"] = True
                         
                         logging.info(f"📊 Component progress: {total_completed}/{len(section_items)} sections completed")
@@ -9431,12 +9178,10 @@ def generate_comprehensive_component_report(complete_raw_data: Dict, report_id: 
     if not notifications_sent["complete"]:
         completion_data = {
             'total_words': total_words,
-            'total_sections': len(successful_sections),
+            'total_components': len(successful_sections),
             'processing_time': total_time
         }
-        Thread(target=lambda: PersonalizedNotificationService.send_personalized_notification_sync(
-            user_id, user_profile, "complete", completion_data, GEMINI_API_KEYS[0], report_id
-        ), daemon=True).start()
+        send_component_notification_background(user_id, user_profile, "complete", completion_data)
         notifications_sent["complete"] = True
     
     # Add enhanced report metadata
@@ -9638,36 +9383,6 @@ def add_component_report_summary(doc: Document, report_data: Dict):
     summary_para.add_run(f"\n• Report Type: {report_meta.get('report_type', 'N/A')}")
 
 # ======================================================
-#           BLOB UPLOAD HELPER WITH RETRY
-# ======================================================
-def upload_blob_with_retry(container_client, blob_name, data, content_settings, max_retries=3):
-    """
-    Helper function to upload blob with retry logic
-    """
-    for attempt in range(max_retries):
-        try:
-            container_client.upload_blob(
-                name=blob_name,
-                data=data,
-                overwrite=True,
-                content_settings=content_settings
-            )
-            logging.info(f"✅ Successfully uploaded: {blob_name}")
-            return True
-        except Exception as e:
-            if attempt < max_retries - 1:
-                wait_time = (attempt + 1) * 2
-                logging.warning(f"Upload attempt {attempt + 1} failed for {blob_name}: {str(e)}. Retrying in {wait_time}s...")
-                time.sleep(wait_time)
-                # Reset data stream position if possible
-                if hasattr(data, 'seek'):
-                    data.seek(0)
-            else:
-                logging.error(f"❌ Failed to upload {blob_name} after {max_retries} attempts: {str(e)}")
-                raise
-    return False
-
-# ======================================================
 #           Azure Storage for Components
 # ======================================================
 def upload_component_report_to_azure(report_data: Dict, report_id: str, user_id: str):
@@ -9686,10 +9401,9 @@ def upload_component_report_to_azure(report_data: Dict, report_id: str, user_id:
             logging.info(f"✅ Container '{container_name}' created")
         except:
             logging.info(f"📦 Container '{container_name}' already exists")
-
-        # Get client folder from database (e.g., "499-tkrotiris")
-        client_folder = get_client_folder_name(user_id)
-        folder_name = f"{client_folder}/the component engine report"
+        
+        # Create folder structure: component engine report/
+        folder_name = "component engine report"
         logging.info(f"📁 Using folder structure: {folder_name}/")
         
         # ===============================================================
@@ -9702,7 +9416,11 @@ def upload_component_report_to_azure(report_data: Dict, report_id: str, user_id:
         doc_bytes.seek(0)
         
         doc_blob_name = f"{folder_name}/{report_id}_comprehensive_component_audit.docx"
-        upload_blob_with_retry(container_client, doc_blob_name, doc_bytes, ContentSettings(
+        container_client.upload_blob(
+            name=doc_blob_name,
+            data=doc_bytes,
+            overwrite=True,
+            content_settings=ContentSettings(
                 content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
         )
@@ -9716,7 +9434,11 @@ def upload_component_report_to_azure(report_data: Dict, report_id: str, user_id:
         json_bytes = io.BytesIO(json_data.encode("utf-8"))
         
         json_blob_name = f"{folder_name}/{report_id}_comprehensive_component_report.json"
-        upload_blob_with_retry(container_client, json_blob_name, json_bytes, ContentSettings(content_type="application/json")
+        container_client.upload_blob(
+            name=json_blob_name,
+            data=json_bytes,
+            overwrite=True,
+            content_settings=ContentSettings(content_type="application/json")
         )
         logging.info(f"✅ Complete Component JSON file uploaded: {json_blob_name}")
         
@@ -9737,7 +9459,11 @@ def upload_component_report_to_azure(report_data: Dict, report_id: str, user_id:
             chunk_doc['document'].save(chunk_bytes)
             chunk_bytes.seek(0)
             
-            upload_blob_with_retry(container_client, chunk_blob_name, chunk_bytes, ContentSettings(
+            container_client.upload_blob(
+                name=chunk_blob_name,
+                data=chunk_bytes,
+                overwrite=True,
+                content_settings=ContentSettings(
                     content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 )
             )
@@ -9770,7 +9496,11 @@ def upload_component_report_to_azure(report_data: Dict, report_id: str, user_id:
                 qr_chunk['document'].save(qr_chunk_bytes)
                 qr_chunk_bytes.seek(0)
                 
-                upload_blob_with_retry(container_client, qr_chunk_blob_name, qr_chunk_bytes, ContentSettings(
+                container_client.upload_blob(
+                    name=qr_chunk_blob_name,
+                    data=qr_chunk_bytes,
+                    overwrite=True,
+                    content_settings=ContentSettings(
                         content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
                 )
@@ -9846,7 +9576,11 @@ def upload_component_report_to_azure(report_data: Dict, report_id: str, user_id:
         chunks_index_json = json.dumps(chunks_index, indent=2, default=str)
         chunks_index_bytes = io.BytesIO(chunks_index_json.encode("utf-8"))
         
-        upload_blob_with_retry(container_client, chunks_index_blob_name, chunks_index_bytes, ContentSettings(content_type="application/json")
+        container_client.upload_blob(
+            name=chunks_index_blob_name,
+            data=chunks_index_bytes,
+            overwrite=True,
+            content_settings=ContentSettings(content_type="application/json")
         )
         logging.info(f"✅ Comprehensive Chunks index uploaded: {chunks_index_blob_name}")
         
@@ -9891,7 +9625,11 @@ def upload_component_report_to_azure(report_data: Dict, report_id: str, user_id:
         summary_json = json.dumps(upload_summary, indent=2, default=str)
         summary_bytes = io.BytesIO(summary_json.encode("utf-8"))
         
-        upload_blob_with_retry(container_client, summary_blob_name, summary_bytes, ContentSettings(content_type="application/json")
+        container_client.upload_blob(
+            name=summary_blob_name,
+            data=summary_bytes,
+            overwrite=True,
+            content_settings=ContentSettings(content_type="application/json")
         )
         logging.info(f"✅ Upload summary created: {summary_blob_name}")
         
@@ -11360,7 +11098,7 @@ async def lifespan(app: FastAPI):
     logging.info(f"🔑 API Keys Available: {len(GEMINI_API_KEYS)}")
     logging.info("📊 Phase-Based Assessment: ENABLED (Foundation/Breakout/Rapids)")
     logging.info("🔧 Component Report Generation: READY")
-    logging.info("☁️ Azure Storage: {client_folder}/the component engine report folder")
+    logging.info("☁️ Azure Storage: component engine report folder")
     logging.info("🔍 Indexer Integration: ENABLED")
     logging.info("✅ All systems operational - Component Engine ready for requests")
     
@@ -11589,33 +11327,79 @@ def generate_component_comprehensive_background(user_id: str, complete_raw_data:
             store_component_report_metadata(report_id, user_id, assessment_id, section_count, 
                                           container_name, generation_metadata, phase, phase_label)
         
-        # 7) AZURE AUTOMATIC INDEXING AFTER SUCCESSFUL REPORT GENERATION
+        # 7) TRIGGER INDEXER AFTER SUCCESSFUL COMPONENT REPORT GENERATION
+        indexer_job_id = None
+        indexer_status = "not_triggered"
+        
         if success:
             try:
-                logging.info(f"🔄 [Background] Component report uploaded successfully for user_id={user_id}")
+                logging.info(f"🔄 [Background] Triggering component indexer for user_id={user_id}")
+                
+                # Update status to show indexer is starting
+                component_job_status[report_id]["status"] = "triggering_indexer"
+                component_job_status[report_id]["message"] = "Triggering indexer for component report content"
+                
+                # WINDOWS-COMPATIBLE INDEXER CALL
+                def run_component_indexer():
+                    # Set Windows-specific event loop policy if needed
+                    if platform.system() == 'Windows':
+                        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+                    
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    try:
+                        return loop.run_until_complete(trigger_component_indexer_for_client(
+                            user_id, 
+                            force=False, 
+                            new_client=False
+                        ))
+                    finally:
+                        loop.close()
 
-                # Azure automatic indexing - no manual trigger needed
-                logging.info(f"📝 [Background] Component report uploaded successfully for user_id={user_id}")
-                logging.info(f"⏱️ [Background] Azure indexer will automatically process files within 5 minutes")
-
-                # Update status to show indexing will happen automatically
-                component_job_status[report_id]["status"] = "completed"
-                component_job_status[report_id]["message"] = "Component report complete - Indexing will occur automatically within 5 minutes"
-                component_job_status[report_id]["indexer_status"] = "auto_scheduled"
-
+                indexer_success, indexer_message, indexer_job_id = run_component_indexer()
+                
+                if indexer_success:
+                    indexer_status = "triggered"
+                    logging.info(f"✅ [Background] Component indexer triggered successfully: job_id={indexer_job_id}")
+                    
+                    # Store indexer job metadata
+                    store_component_indexer_job_metadata(report_id, user_id, indexer_job_id, indexer_status)
+                    
+                    # Update status to show indexer is running
+                    component_job_status[report_id]["status"] = "indexer_running"
+                    component_job_status[report_id]["message"] = f"Component indexer running (job_id: {indexer_job_id})"
+                    component_job_status[report_id]["indexer_job_id"] = indexer_job_id
+                    
+                else:
+                    indexer_status = "failed"
+                    logging.error(f"❌ [Background] Component indexer trigger failed: {indexer_message}")
+                    
+                    # Store the failure in database
+                    store_component_indexer_job_metadata(report_id, user_id, indexer_job_id or "failed", indexer_status)
+                    
             except Exception as indexer_error:
-                logging.error(f"❌ [Background] Error during final processing: {str(indexer_error)}")
-
+                indexer_status = "error"
+                logging.error(f"❌ [Background] Component indexer trigger error: {str(indexer_error)}")
+                
+                # Store the error in database
+                store_component_indexer_job_metadata(report_id, user_id, "error", indexer_status)
+        
         # 8) Update final status
         if success:
             elapsed_time = time.time() - start_time
             report_meta = report_data.get("_enhanced_component_report_metadata", {})
             
             # Determine final status based on both report and indexer success
-            # Final status - automatic indexing will happen
-            final_status = "completed"
-            final_message = f"Component report generated successfully: {message}"
-
+            if indexer_status == "triggered":
+                final_status = "completed_with_indexing"
+                final_message = f"Component report generated and indexer triggered: {message}"
+            elif indexer_status in ["failed", "error"]:
+                final_status = "completed_indexing_failed"
+                final_message = f"Component report generated successfully: {message}. Indexer failed: {indexer_status}"
+            else:
+                final_status = "completed"
+                final_message = f"Component report generated successfully: {message}"
+            
             component_job_status[report_id] = {
                 "status": final_status,
                 "message": final_message,
@@ -11626,8 +11410,10 @@ def generate_component_comprehensive_background(user_id: str, complete_raw_data:
                 "total_sections": report_meta.get("total_sections", 0),
                 "processing_method": "component_parallel_analysis",
                 "ai_model": "gemini-2.5-pro-component",
-                                "indexer_status": "auto_scheduled",
-                                "phase": phase,
+                "indexer_job_id": indexer_job_id,
+                "indexer_status": indexer_status,
+                "indexer_integration": True,
+                "phase": phase,
                 "phase_label": phase_label,
                 "qr_chunking_completed": True  # 🆕 Track Q&R chunking completion
             }
@@ -12185,7 +11971,8 @@ async def health_check():
                 "real_time_status_tracking": True,
                 "parallel_processing": True,
                 "automatic_indexing": True,
-                                "phase_based_assessment": True
+                "indexer_integration": True,
+                "phase_based_assessment": True
             },
             "indexer_config": {
                 "indexer_api_url": INDEXER_API_BASE_URL,
@@ -12210,7 +11997,7 @@ async def health_check():
                 "expected_report_length": "12,000+ words",
                 "estimated_generation_time": "2-5 minutes",
                 "parallel_processing": True,
-                "folder_name": "the component engine report"
+                "folder_name": "component engine report"
             }
         }
     except Exception as e:
@@ -12284,8 +12071,3 @@ if __name__ == "__main__":
         access_log=True,
         workers=1  # Single worker for optimal resource management
     )
-
-
-
-
-

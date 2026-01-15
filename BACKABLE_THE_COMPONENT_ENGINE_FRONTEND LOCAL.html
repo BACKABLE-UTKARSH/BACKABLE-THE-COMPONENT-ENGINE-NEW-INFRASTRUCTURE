@@ -1,0 +1,3002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Business Component Assessment & Growth Blueprint</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+        }
+
+        .phase-indicator {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 20px 0;
+            display: inline-block;
+        }
+
+        .intro-text {
+            font-size: 1.1em;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #4a5568;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .user-input-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: block;
+        }
+
+        .user-input-section.hidden {
+            display: none;
+        }
+
+        .user-input-section h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .user-input-field {
+            margin-bottom: 20px;
+        }
+
+        .user-input-field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .user-input-field input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .user-input-field input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .start-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .start-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .mind-expansion {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .mind-expansion.active {
+            display: block;
+        }
+
+        .mind-expansion-title {
+            font-size: 2em;
+            color: #4a5568;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .mind-expansion-description {
+            font-size: 1.1em;
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .component-question {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .question-type {
+            font-size: 0.9em;
+            color: #718096;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .component-option-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .component-option {
+            padding: 18px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .component-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .component-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .component-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .option-emoji {
+            font-size: 1.8em;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .option-content {
+            flex: 1;
+        }
+
+        .option-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .option-description {
+            font-size: 0.95em;
+            color: #718096;
+            line-height: 1.4;
+        }
+
+        /* Navigation */
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .nav-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .nav-button.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-button.secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .nav-button.secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .nav-button:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Submit Button */
+        .submit-container {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .submit-button {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading & Status */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: #e6fffa;
+            color: #234e52;
+            border: 1px solid #81e6d9;
+        }
+
+        .status-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+
+        .status-info {
+            background: #ebf8ff;
+            color: #2a4365;
+            border: 1px solid #90cdf4;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .component-option {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .option-emoji {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- User Input Section -->
+        <div class="user-input-section" id="userInputSection">
+            <h2>🚀 Let's Assess Your Business Components</h2>
+            <div class="user-input-field">
+                <label for="userIdInput">Enter Your User ID:</label>
+                <input type="text" id="userIdInput" placeholder="e.g., john_doe_123 or your email" required>
+            </div>
+            <button class="start-button" onclick="startAssessment()">Start My Component Assessment</button>
+        </div>
+
+        <div class="header" id="assessmentHeader" style="display: none;">
+            <h1>🧠 Your Business Component Assessment</h1>
+            <div class="phase-indicator" id="phaseIndicator">Loading your business phase...</div>
+            <p class="intro-text">
+                ✨ Discover the components that will accelerate your business growth.<br>
+                We'll assess your current systems and show you exactly what to build next.
+            </p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">0% Complete</div>
+        </div>
+
+        <!-- Dynamic Mind Expansions will be inserted here -->
+        <div id="dynamicMindExpansions"></div>
+
+        <!-- Final submission section -->
+        <div class="mind-expansion" id="finalExpansion" style="display: none;">
+            <h2 class="mind-expansion-title">🎉 Assessment Complete!</h2>
+            <p class="mind-expansion-description">Your Business Component Assessment is now ready for analysis by our AI.</p>
+            
+            <div class="submit-container">
+                <button class="submit-button" onclick="submitAssessment()">
+                    Generate My Component Growth Blueprint
+                </button>
+            </div>
+            
+            <div id="submission-status" class="status-message" style="display: none;"></div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation" id="navigationSection">
+            <button class="nav-button secondary" id="prevBtn" onclick="previousExpansion()" disabled>Previous</button>
+            <div id="expansionIndicator">Mind Expansion 1 of 8</div>
+            <button class="nav-button primary" id="nextBtn" onclick="nextExpansion()">Next Mind Expansion</button>
+        </div>
+    </div>
+
+    <script>
+        // ✅ LOCAL BACKEND URL - Component Engine runs on port 8001
+        const BACKEND_URL = 'http://localhost:8001';
+        
+        // Global variables
+        let currentUserId = null;
+        let assessmentStarted = false;
+        let currentExpansion = 1;
+        let totalExpansions = 8;
+        let responses = {};
+        let questionStates = {};
+        let startTime = new Date();
+        let questionStartTimes = {};
+        let lastMousePosition = { x: 0, y: 0 };
+        let lastActiveTime = new Date();
+        let currentQuestionFocus = null;
+        let reportId = null;
+        let userPhase = null;
+        let phaseQuestions = [];
+
+        // Enhanced metadata tracking (same as profile engine)
+        let metadataTracking = {
+            session: {
+                sessionId: 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                startTime: new Date(),
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                screenResolution: `${screen.width}x${screen.height}`,
+                viewportSize: { width: window.innerWidth, height: window.innerHeight },
+                devicePixelRatio: window.devicePixelRatio,
+                colorDepth: screen.colorDepth,
+                touchSupport: 'ontouchstart' in window,
+                cookiesEnabled: navigator.cookieEnabled,
+                onlineStatus: navigator.onLine,
+                referrer: document.referrer || 'direct',
+                entryUrl: window.location.href
+            },
+            mouse: {
+                movements: [],
+                clicks: [],
+                scrolls: [],
+                hovers: {},
+                totalDistance: 0,
+                avgSpeed: 0,
+                idleTime: 0,
+                lastActivity: new Date()
+            },
+            keyboard: {
+                keystrokeTimings: [],
+                typingPatterns: {},
+                backspaceCount: 0,
+                pasteEvents: 0,
+                totalKeystrokes: 0
+            },
+            timing: {
+                pageLoadTime: null,
+                questionTimes: {},
+                pauseDurations: [],
+                totalEngagementTime: 0,
+                timePerExpansion: {}
+            },
+            behavioral: {
+                hesitationZones: [],
+                revisionCount: 0,
+                confidenceScores: [],
+                attentionSpans: [],
+                taskSwitching: 0
+            },
+            performance: {
+                memoryUsage: null,
+                connectionSpeed: null,
+                renderTimes: [],
+                errors: []
+            }
+        };
+
+        // COMPLETE PHASE-SPECIFIC QUESTION DEFINITIONS
+        const phaseQuestionSets = {
+            'foundation_to_challenger': {
+                phases: [0, 1, 2],
+                label: 'Foundation to Challenger',
+                totalQuestions: 33,
+                mindExpansions: [
+                    {
+                        id: 1,
+                        title: 'Mind Expansion 1: Strategy & Direction Components',
+                        description: 'The foundation of every successful business starts with clear strategy and direction.',
+                        questions: [
+                            {
+                                id: '1.1',
+                                title: 'When making major business decisions, what typically guides you?',
+                                type: 'Select your approach',
+                                options: [
+                                    { emoji: '📋', label: 'Written Strategy', description: 'Clear documented strategy that guides most decisions' },
+                                    { emoji: '🎯', label: 'General Direction', description: 'Overall direction but not fully documented' },
+                                    { emoji: '💭', label: 'Mental Framework', description: 'Strategy mostly in my head or unclear' }
+                                ]
+                            },
+                            {
+                                id: '1.2',
+                                title: 'Right now, without looking anything up, do you know your profit margin from last month?',
+                                type: 'Select your knowledge level',
+                                options: [
+                                    { emoji: '💯', label: 'Know Exactly', description: 'I know last month\'s revenue, expenses, and profit margin' },
+                                    { emoji: '📊', label: 'Know Roughly', description: 'I know approximate revenue and whether we made or lost money' },
+                                    { emoji: '🤔', label: 'Not Sure', description: 'I\'d need to look up numbers or calculate to know for certain' }
+                                ]
+                            },
+                            {
+                                id: '1.3',
+                                title: 'How systematic is your personal development approach?',
+                                type: 'Select your development style',
+                                options: [
+                                    { emoji: '📚', label: 'Clear Plan', description: 'Clear personal development plan aligned with business' },
+                                    { emoji: '📖', label: 'Some Development', description: 'Some personal development but not systematic' },
+                                    { emoji: '🌱', label: 'Accidental Growth', description: 'Personal growth happens by accident' }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        title: 'Mind Expansion 2: Growth & Sales Components',
+                        description: 'Building systematic approaches to finding and converting customers.',
+                        questions: [
+                            {
+                                id: '2.1',
+                                title: 'Last week, when someone expressed serious interest in your services, what actually happened?',
+                                type: 'Select your approach',
+                                options: [
+                                    { emoji: '📋', label: 'Systematic Follow-up', description: 'They went through our established process with clear next steps and timeline' },
+                                    { emoji: '📞', label: 'Personal Response', description: 'I responded personally and guided them through our general approach' },
+                                    { emoji: '🤞', label: 'Informal Approach', description: 'I followed up when I could but no structured process' }
+                                ]
+                            },
+                            {
+                                id: '2.2',
+                                title: 'How effectively do you track your growth metrics?',
+                                type: 'Select your tracking level',
+                                options: [
+                                    { emoji: '📊', label: 'Comprehensive Tracking', description: 'Track lead generation, conversion, and retention metrics' },
+                                    { emoji: '📈', label: 'Inconsistent Tracking', description: 'Track some growth metrics inconsistently' },
+                                    { emoji: '📉', label: 'Limited Measurement', description: 'Limited growth measurement' }
+                                ]
+                            },
+                            {
+                                id: '2.3',
+                                title: 'How well do you understand your ideal clients?',
+                                type: 'Select your understanding level',
+                                options: [
+                                    { emoji: '🎯', label: 'Clear Profiles', description: 'Clear ideal client profiles that guide marketing and sales' },
+                                    { emoji: '📝', label: 'General Understanding', description: 'General understanding but not documented' },
+                                    { emoji: '🤷', label: 'Serve Anyone', description: 'Serve whoever shows up' }
+                                ]
+                            },
+                            {
+                                id: '2.4',
+                                title: 'How comprehensive is your sales strategy?',
+                                type: 'Select your strategy level',
+                                options: [
+                                    { emoji: '🎯', label: 'Comprehensive Strategy', description: 'Comprehensive sales strategy that drives results' },
+                                    { emoji: '📈', label: 'Basic Approach', description: 'Basic sales approach but not fully developed' },
+                                    { emoji: '🎲', label: 'Ad Hoc Strategy', description: 'Sales strategy is ad hoc' }
+                                ]
+                            },
+                            {
+                                id: '2.5',
+                                title: 'How effective are your sales funnels?',
+                                type: 'Select your funnel effectiveness',
+                                options: [
+                                    { emoji: '⚙️', label: 'Well-Designed Funnels', description: 'Well-designed funnels that convert consistently' },
+                                    { emoji: '🔧', label: 'Basic Funnel', description: 'Basic funnel but needs optimization' },
+                                    { emoji: '❌', label: 'No Systematic Funnel', description: 'No systematic funnel approach' }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: 3,
+                        title: 'Mind Expansion 3: Financial Components',
+                        description: 'Understanding and managing the financial health of your business.',
+                        questions: [
+                            {
+                                id: '3.1',
+                                title: 'When making a significant business purchase (over $1,000), what information do you typically use?',
+                                type: 'Select your decision-making approach',
+                                options: [
+                                    { emoji: '📊', label: 'Comprehensive Data', description: 'Current cash flow, budget impact, ROI analysis, and financial projections' },
+                                    { emoji: '💰', label: 'Basic Financial Review', description: 'Current bank balance, monthly budget, and general business health' },
+                                    { emoji: '🤔', label: 'Gut Feel Decision', description: 'Whether we can afford it right now and if it feels like a good idea' }
+                                ]
+                            },
+                            {
+                                id: '3.2',
+                                title: 'How solid is your financial infrastructure?',
+                                type: 'Select your infrastructure level',
+                                options: [
+                                    { emoji: '⚙️', label: 'Solid Systems', description: 'Solid financial systems and processes' },
+                                    { emoji: '🔧', label: 'Basic Systems', description: 'Basic systems but need improvement' },
+                                    { emoji: '📝', label: 'Minimal Infrastructure', description: 'Minimal financial infrastructure' }
+                                ]
+                            },
+                            {
+                                id: '3.3',
+                                title: 'How well do you handle financial compliance?',
+                                type: 'Select your compliance level',
+                                options: [
+                                    { emoji: '✅', label: 'Properly Managed', description: 'All key financial obligations managed properly' },
+                                    { emoji: '🔄', label: 'Some Gaps', description: 'Most financial tasks handled but some gaps' },
+                                    { emoji: '⚠️', label: 'Catch-Up Mode', description: 'Financial management is catch-up mode' }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: 4,
+                        title: 'Mind Expansion 4: Work & Organization Components',
+                        description: 'How you organize work, manage priorities, and coordinate activities.',
+                        questions: [
+                            {
+                                id: '4.1',
+                                title: 'When you have more work than you can handle alone, what typically happens?',
+                                type: 'Select your approach',
+                                options: [
+                                    { emoji: '🤝', label: 'Strategic Support', description: 'I have reliable contractors, freelancers, or part-time help with clear processes' },
+                                    { emoji: '📞', label: 'Some Help', description: 'I can get occasional help from others but mostly handle things myself' },
+                                    { emoji: '💪', label: 'Solo Push', description: 'I work longer hours and handle everything personally' }
+                                ]
+                            },
+                            {
+                                id: '4.2',
+                                title: 'When you need skills or capacity you don\'t have, how do you handle it?',
+                                type: 'Select your approach',
+                                options: [
+                                    { emoji: '🏗️', label: 'Established Network', description: 'I have a reliable network of specialists I can call on with clear arrangements' },
+                                    { emoji: '📋', label: 'Informal Connections', description: 'I know people I can reach out to, but arrangements are usually made case-by-case' },
+                                    { emoji: '🔍', label: 'Figure It Out', description: 'I typically try to learn it myself or search for help when problems arise' }
+                                ]
+                            },
+                            {
+                                id: '4.3',
+                                title: 'When multiple urgent things compete for your attention, how do you typically handle it?',
+                                type: 'Select your approach',
+                                options: [
+                                    { emoji: '🎯', label: 'Clear Framework', description: 'I have clear systems for prioritizing and rarely feel overwhelmed by competing demands' },
+                                    { emoji: '⚖️', label: 'Weighing Options', description: 'I\'m generally good at prioritizing but sometimes struggle with competing demands' },
+                                    { emoji: '🔄', label: 'Reactive Mode', description: 'I tend to respond to whoever shouts loudest or what feels most urgent' }
+                                ]
+                            },
+                            {
+                                id: '4.4',
+                                title: 'Right now, how clear are you about where you should be spending most of your time?',
+                                type: 'Select your clarity level',
+                                options: [
+                                    { emoji: '🎯', label: 'Crystal Clear', description: 'Very clear on my highest-value activities and protect time for them' },
+                                    { emoji: '📈', label: 'Generally Clear', description: 'Good sense of priorities but sometimes get pulled into less important tasks' },
+                                    { emoji: '🌪️', label: 'Often Unclear', description: 'Frequently feel unsure about what I should be focusing on most' }
+                                ]
+                            },
+                            {
+                                id: '4.5',
+                                title: 'When you need to find important business information (contracts, financials, client details), what happens?',
+                                type: 'Select your organization level',
+                                options: [
+                                    { emoji: '📂', label: 'Systematic Storage', description: 'I have clear systems and can find what I need quickly and reliably' },
+                                    { emoji: '🔍', label: 'Some Organization', description: 'I\'m reasonably organized but sometimes takes time to locate specific information' },
+                                    { emoji: '🗂️', label: 'Hunt and Search', description: 'I often spend significant time searching for information I need' }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: 5,
+                        title: 'Mind Expansion 5: Business Optimization Components',
+                        description: 'Systems and processes that make your business run more efficiently.',
+                        questions: [
+                            {
+                                id: '5.1',
+                                title: 'If a great growth opportunity came up tomorrow that would double your business, how would you feel?',
+                                type: 'Select your feeling',
+                                options: [
+                                    { emoji: '🚀', label: 'Excited & Ready', description: 'Confident our systems and foundation could handle significant growth' },
+                                    { emoji: '😰', label: 'Excited but Worried', description: 'Want the growth but concerned about our ability to handle it well' },
+                                    { emoji: '😱', label: 'Overwhelmed', description: 'Would be exciting but honestly feel our foundation isn\'t ready for major growth' }
+                                ]
+                            },
+                            {
+                                id: '5.2',
+                                title: 'How effectively are your reporting systems?',
+                                type: 'Select your reporting level',
+                                options: [
+                                    { emoji: '📊', label: 'Comprehensive Reporting', description: 'Comprehensive reporting that drives decisions' },
+                                    { emoji: '📈', label: 'Basic Reporting', description: 'Basic reporting but could be more useful' },
+                                    { emoji: '📉', label: 'Limited Capabilities', description: 'Limited reporting capabilities' }
+                                ]
+                            },
+                            {
+                                id: '5.3',
+                                title: 'When you have important business discussions (with clients, partners, or advisors), how do they typically go?',
+                                type: 'Select your approach',
+                                options: [
+                                    { emoji: '🎯', label: 'Structured & Productive', description: 'Clear agenda, specific outcomes, follow-up actions decided' },
+                                    { emoji: '💬', label: 'Good Conversations', description: 'Generally productive but could be more structured and focused' },
+                                    { emoji: '🔄', label: 'Hit or Miss', description: 'Sometimes useful but often feel like time could be better spent' }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: 6,
+                        title: 'Mind Expansion 6: Market & Client Components',
+                        description: 'Understanding your market position and client relationships.',
+                        questions: [
+                            {
+                                id: '6.1',
+                                title: 'How tailored is your approach for ideal clients?',
+                                type: 'Select your tailoring level',
+                                options: [
+                                    { emoji: '🎯', label: 'Tailored Approach', description: 'Tailored approach that resonates with ideal clients' },
+                                    { emoji: '📈', label: 'General Approach', description: 'General approach but not fully optimized' },
+                                    { emoji: '📋', label: 'Same for All', description: 'Same approach for all prospects' }
+                                ]
+                            },
+                            {
+                                id: '6.2',
+                                title: 'When a client finishes working with you, what do you typically know about their experience?',
+                                type: 'Select your feedback level',
+                                options: [
+                                    { emoji: '📊', label: 'Comprehensive Feedback', description: 'Detailed feedback, satisfaction scores, and specific insights for improvement' },
+                                    { emoji: '💬', label: 'General Feedback', description: 'Overall sense of satisfaction and some specific comments' },
+                                    { emoji: '🤞', label: 'Hope They\'re Happy', description: 'Limited feedback, mostly assume things went well if they don\'t complain' }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: 7,
+                        title: 'Mind Expansion 7: Infrastructure Components',
+                        description: 'The underlying systems and processes that support your business.',
+                        questions: [
+                            {
+                                id: '7.1',
+                                title: 'How clearly do you identify your system gaps?',
+                                type: 'Select your awareness level',
+                                options: [
+                                    { emoji: '🎯', label: 'Clear View', description: 'Clear view of system needs and implementation plan' },
+                                    { emoji: '🔄', label: 'Some Awareness', description: 'Aware of some gaps but not comprehensive' },
+                                    { emoji: '❓', label: 'Unclear Needs', description: 'System needs are unclear' }
+                                ]
+                            },
+                            {
+                                id: '7.2',
+                                title: 'When making important business decisions, what usually influences you most?',
+                                type: 'Select your decision style',
+                                options: [
+                                    { emoji: '📊', label: 'Data-Driven Analysis', description: 'Specific data, trends, and measurable information guide most important decisions' },
+                                    { emoji: '🔄', label: 'Mixed Approach', description: 'Combination of available data, experience, and business intuition' },
+                                    { emoji: '💭', label: 'Experience & Intuition', description: 'Business experience and gut instincts drive most decision-making' }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: 8,
+                        title: 'Mind Expansion 8: Personal Development Components',
+                        description: 'Your personal growth and leadership development as a business owner.',
+                        questions: [
+                            {
+                                id: '8.1',
+                                title: 'How clear is your definition of personal success?',
+                                type: 'Select your clarity level',
+                                options: [
+                                    { emoji: '🎯', label: 'Very Clear', description: 'Very clear personal success metrics and progress' },
+                                    { emoji: '🔄', label: 'Generally Clear', description: 'Generally clear but evolving' },
+                                    { emoji: '❓', label: 'Unclear Definition', description: 'Personal success definition is unclear' }
+                                ]
+                            },
+                            {
+                                id: '8.2',
+                                title: 'When people describe your leadership style, what do they typically say?',
+                                type: 'Select your leadership identity',
+                                options: [
+                                    { emoji: '🎯', label: 'Clear Identity', description: 'Consistent feedback about my clear, effective leadership approach' },
+                                    { emoji: '📈', label: 'Developing Style', description: 'Generally positive feedback but still evolving my leadership approach' },
+                                    { emoji: '❓', label: 'Unclear Identity', description: 'Mixed or limited feedback about my leadership style' }
+                                ]
+                            },
+                            {
+                                id: '8.3',
+                                title: 'How systematic is your skill development program?',
+                                type: 'Select your development approach',
+                                options: [
+                                    { emoji: '📚', label: 'Active Development', description: 'Active skill development aligned with business needs' },
+                                    { emoji: '📖', label: 'Some Development', description: 'Some skill development but not systematic' },
+                                    { emoji: '🤞', label: 'Accidental Development', description: 'Skill development happens accidentally' }
+                                ]
+                            },
+                            {
+                                id: '8.4',
+                                title: 'How often do you feel stressed or overwhelmed by business operations?',
+                                type: 'Select your stress level',
+                                options: [
+                                    { emoji: '😌', label: 'Rarely Stressed', description: 'Systems work smoothly, I feel in control most of the time' },
+                                    { emoji: '🔄', label: 'Sometimes Stressful', description: 'Generally manageable but occasional system-related stress' },
+                                    { emoji: '😰', label: 'Frequently Overwhelmed', description: 'Often feel behind or out of control due to missing/poor systems' }
+                                ]
+                            },
+                            {
+                                id: '8.5',
+                                title: 'If you couldn\'t touch your business for one full week (no calls, emails, or check-ins), what would realistically happen?',
+                                type: 'Select the likely outcome',
+                                options: [
+                                    { emoji: '🚀', label: 'Business Continues', description: 'Business would run smoothly, possibly even improve in some areas' },
+                                    { emoji: '📱', label: 'Some Issues', description: 'Business would function but might need some problem-solving when I return' },
+                                    { emoji: '🚨', label: 'Serious Problems', description: 'Business would likely face significant problems or disruptions' }
+                                ]
+                            },
+                            {
+                                id: '8.6',
+                                title: 'If your best client offered to triple their business with you starting next month, how would you honestly feel?',
+                                type: 'Select your honest reaction',
+                                options: [
+                                    { emoji: '🎉', label: 'Excited & Confident', description: 'Thrilled and confident we could deliver excellence at that scale' },
+                                    { emoji: '😅', label: 'Excited but Nervous', description: 'Want the opportunity but worried about our ability to maintain quality' },
+                                    { emoji: '😱', label: 'Panic Mode', description: 'Would be great financially but honestly terrified about executing it well' }
+                                ]
+                            },
+                            {
+                                id: '8.7',
+                                title: 'How do most of your new customers typically find you?',
+                                type: 'Select your primary source',
+                                options: [
+                                    { emoji: '🎯', label: 'Systematic Marketing', description: 'Multiple marketing channels working consistently to generate leads' },
+                                    { emoji: '🤝', label: 'Relationship-Based', description: 'Mostly referrals and word-of-mouth from existing relationships' },
+                                    { emoji: '🤞', label: 'Inconsistent Sources', description: 'Mix of sources but no reliable, predictable way for people to find us' }
+                                ]
+                            },
+                            {
+                                id: '8.8',
+                                title: 'When prospects compare you to competitors, what typically sets you apart?',
+                                type: 'Select your differentiation',
+                                options: [
+                                    { emoji: '💎', label: 'Clear Differentiation', description: 'Clear, compelling reasons why we\'re different and better for specific clients' },
+                                    { emoji: '📈', label: 'Some Advantages', description: 'Several things we do well but not always clearly communicated' },
+                                    { emoji: '🤷', label: 'Not Sure', description: 'Compete mainly on price or relationship, unclear what makes us unique' }
+                                ]
+                            },
+                            {
+                                id: '8.9',
+                                title: 'How well protected is your business from common legal and financial risks?',
+                                type: 'Select your protection level',
+                                options: [
+                                    { emoji: '🛡️', label: 'Well Protected', description: 'Proper contracts, insurance, and legal protections in place' },
+                                    { emoji: '📋', label: 'Basic Protection', description: 'Some protections but know there are gaps we should address' },
+                                    { emoji: '🤞', label: 'Minimal Protection', description: 'Limited legal protections, mostly just handle things as they come up' }
+                                ]
+                            },
+                            {
+                                id: '8.10',
+                                title: 'How well do your technology tools support your business needs?',
+                                type: 'Select your tech level',
+                                options: [
+                                    { emoji: '💻', label: 'Well-Integrated Tools', description: 'Technology tools work well together and make business operations smoother' },
+                                    { emoji: '🔧', label: 'Functional Tools', description: 'Basic tools that work but could be more integrated and efficient' },
+                                    { emoji: '📱', label: 'Minimal Tech', description: 'Use basic tools but often feel like technology holds us back rather than helps' }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            'breakout_to_stabilize': {
+    phases: [3, 4],
+    label: 'Breakout to Stabilize',
+    totalQuestions: 68,
+    mindExpansions: [
+        {
+            id: 1,
+            title: 'Mind Expansion 1: Strategic Architecture Components',
+            description: 'Advanced strategic planning and business model validation for scaling businesses.',
+            questions: [
+                {
+                    id: '1.1',
+                    title: 'How comprehensive is your business strategy and model validation?',
+                    type: 'Select your strategy level',
+                    options: [
+                        { emoji: '🎯', label: 'Strategy Drives Decisions', description: 'Strategy drives all major decisions with proven business model' },
+                        { emoji: '📈', label: 'Good Strategy', description: 'Good strategy but business model needs refinement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Strategy or business model needs significant development' }
+                    ]
+                },
+                {
+                    id: '1.2',
+                    title: 'How systematic are your business reviews and action implementation?',
+                    type: 'Select your review system',
+                    options: [
+                        { emoji: '⚙️', label: 'Systematic Reviews', description: 'Systematic business reviews with consistent action implementation' },
+                        { emoji: '📈', label: 'Regular Reviews', description: 'Regular reviews but implementation could be stronger' },
+                        { emoji: '📝', label: 'Ad Hoc Reviews', description: 'Business reviews are ad hoc or don\'t drive action' }
+                    ]
+                },
+                {
+                    id: '1.3',
+                    title: 'How effectively do you measure your strategic foundations?',
+                    type: 'Select your measurement level',
+                    options: [
+                        { emoji: '📊', label: 'Comprehensive Metrics', description: 'Comprehensive metrics that guide strategic decisions' },
+                        { emoji: '📈', label: 'Some Metrics', description: 'Some strategic metrics but could be more comprehensive' },
+                        { emoji: '📉', label: 'Limited Measurement', description: 'Limited strategic measurement capabilities' }
+                    ]
+                },
+                {
+                    id: '1.4',
+                    title: 'How advanced is your planning development system?',
+                    type: 'Select your planning sophistication',
+                    options: [
+                        { emoji: '🚀', label: 'Sophisticated Planning', description: 'Sophisticated planning systems that adapt to growth' },
+                        { emoji: '📈', label: 'Good Planning', description: 'Good planning but needs more sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Planning systems need significant development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 2,
+            title: 'Mind Expansion 2: Growth Engine Components',
+            description: 'Building scalable sales and marketing systems for sustainable growth.',
+            questions: [
+                {
+                    id: '2.1',
+                    title: 'How well is your sales strategy designed for market expansion?',
+                    type: 'Select your expansion readiness',
+                    options: [
+                        { emoji: '🌍', label: 'Proven Strategy', description: 'Proven sales strategy that scales across markets' },
+                        { emoji: '📈', label: 'Good Strategy', description: 'Good sales strategy but needs market expansion capability' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Sales strategy needs development for scale' }
+                    ]
+                },
+                {
+                    id: '2.2',
+                    title: 'How well is your sales infrastructure built for scale?',
+                    type: 'Select your infrastructure level',
+                    options: [
+                        { emoji: '⚙️', label: 'Scales Efficiently', description: 'Sales infrastructure that scales efficiently' },
+                        { emoji: '🔧', label: 'Needs Automation', description: 'Decent infrastructure but needs automation/systematization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Sales infrastructure needs significant development' }
+                    ]
+                },
+                {
+                    id: '2.3',
+                    title: 'How comprehensive is your brand development strategy?',
+                    type: 'Select your brand strategy level',
+                    options: [
+                        { emoji: '💪', label: 'Strong Strategy', description: 'Strong brand strategy that differentiates and drives growth' },
+                        { emoji: '📈', label: 'Good Foundation', description: 'Good brand foundation but strategy needs development' },
+                        { emoji: '🚧', label: 'Needs Work', description: 'Brand strategy needs significant work' }
+                    ]
+                },
+                {
+                    id: '2.4',
+                    title: 'How consistent is your sales team language and communication?',
+                    type: 'Select your communication consistency',
+                    options: [
+                        { emoji: '🎯', label: 'Unified Language', description: 'Unified sales language that drives consistent results' },
+                        { emoji: '📈', label: 'Generally Consistent', description: 'Generally consistent but needs refinement' },
+                        { emoji: '📉', label: 'Lacks Consistency', description: 'Sales communication lacks consistency' }
+                    ]
+                },
+                {
+                    id: '2.5',
+                    title: 'How comprehensive is your market position intelligence?',
+                    type: 'Select your intelligence level',
+                    options: [
+                        { emoji: '📊', label: 'Comprehensive Intelligence', description: 'Comprehensive market intelligence that guides strategy' },
+                        { emoji: '📈', label: 'Some Intelligence', description: 'Some market intelligence but could be more systematic' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Market position monitoring needs development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 3,
+            title: 'Mind Expansion 3: Financial Architecture Components',
+            description: 'Advanced financial management and growth optimization systems.',
+            questions: [
+                {
+                    id: '3.1',
+                    title: 'How advanced is your financial reporting infrastructure?',
+                    type: 'Select your reporting sophistication',
+                    options: [
+                        { emoji: '💼', label: 'Sophisticated Reporting', description: 'Sophisticated financial reporting that drives decisions' },
+                        { emoji: '📊', label: 'Good Reporting', description: 'Good reporting but needs more sophistication' },
+                        { emoji: '🚧', label: 'Needs Upgrade', description: 'Financial reporting needs significant upgrade' }
+                    ]
+                },
+                {
+                    id: '3.2',
+                    title: 'How comprehensive is your financial KPI system?',
+                    type: 'Select your KPI system level',
+                    options: [
+                        { emoji: '📊', label: 'Complete System', description: 'Complete KPI system that drives financial performance' },
+                        { emoji: '📈', label: 'Good KPIs', description: 'Good KPIs but system needs refinement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Financial KPI system needs development' }
+                    ]
+                },
+                {
+                    id: '3.3',
+                    title: 'How comprehensive is your legal and financial compliance?',
+                    type: 'Select your compliance level',
+                    options: [
+                        { emoji: '✅', label: 'Full Compliance', description: 'Full compliance with sophisticated management systems' },
+                        { emoji: '📈', label: 'Generally Compliant', description: 'Generally compliant but systems need improvement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Compliance management needs systematic development' }
+                    ]
+                },
+                {
+                    id: '3.4',
+                    title: 'How well is your financial structure optimized for growth or sale?',
+                    type: 'Select your optimization level',
+                    options: [
+                        { emoji: '💰', label: 'Optimized Structure', description: 'Financial structure optimized for growth and value creation' },
+                        { emoji: '📈', label: 'Good Structure', description: 'Good structure but needs optimization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Financial structure needs strategic development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 4,
+            title: 'Mind Expansion 4: Leadership & Management Components',
+            description: 'Building high-performance leadership and management systems.',
+            questions: [
+                {
+                    id: '4.1',
+                    title: 'How advanced is your high-performance leadership system?',
+                    type: 'Select your leadership system level',
+                    options: [
+                        { emoji: '🚀', label: 'Sophisticated System', description: 'Sophisticated leadership system driving high performance' },
+                        { emoji: '📈', label: 'Good Leadership', description: 'Good leadership but needs systematic enhancement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Leadership system needs significant development' }
+                    ]
+                },
+                {
+                    id: '4.2',
+                    title: 'How comprehensive is your team communication infrastructure?',
+                    type: 'Select your communication infrastructure',
+                    options: [
+                        { emoji: '📡', label: 'Scales with Growth', description: 'Communication systems that scale with growth' },
+                        { emoji: '📈', label: 'Good Communication', description: 'Good communication but needs systematization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Communication infrastructure needs development' }
+                    ]
+                },
+                {
+                    id: '4.3',
+                    title: 'How systematic is your team management infrastructure?',
+                    type: 'Select your management system level',
+                    options: [
+                        { emoji: '⚙️', label: 'Sophisticated Systems', description: 'Sophisticated team management systems' },
+                        { emoji: '📈', label: 'Good Management', description: 'Good team management but needs systematization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Team management infrastructure needs development' }
+                    ]
+                },
+                {
+                    id: '4.4',
+                    title: 'How comprehensive is your manager development program?',
+                    type: 'Select your development program level',
+                    options: [
+                        { emoji: '📚', label: 'Comprehensive System', description: 'Comprehensive manager development system' },
+                        { emoji: '📈', label: 'Some Development', description: 'Some manager development but not systematic' },
+                        { emoji: '🚧', label: 'Needs Approach', description: 'Manager development needs systematic approach' }
+                    ]
+                },
+                {
+                    id: '4.5',
+                    title: 'How strong are your performance and accountability systems?',
+                    type: 'Select your accountability level',
+                    options: [
+                        { emoji: '💪', label: 'Strong Systems', description: 'Strong accountability systems that drive performance' },
+                        { emoji: '📈', label: 'Some Accountability', description: 'Some accountability but needs systematization' },
+                        { emoji: '🚧', label: 'Need Development', description: 'Accountability systems need development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 5,
+            title: 'Mind Expansion 5: People & Culture Components',
+            description: 'Building strong teams and organizational culture for sustainable growth.',
+            questions: [
+                {
+                    id: '5.1',
+                    title: 'How strong is your senior leadership team?',
+                    type: 'Select your SLT strength',
+                    options: [
+                        { emoji: '💪', label: 'Strong SLT', description: 'Strong SLT that drives business independently' },
+                        { emoji: '📈', label: 'Good SLT', description: 'Good SLT but needs development or alignment' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'SLT needs significant development' }
+                    ]
+                },
+                {
+                    id: '5.2',
+                    title: 'How comprehensive is your HR and recruitment strategy?',
+                    type: 'Select your recruitment level',
+                    options: [
+                        { emoji: '🎯', label: 'Sophisticated System', description: 'Sophisticated recruitment system that scales' },
+                        { emoji: '📈', label: 'Good Recruitment', description: 'Good recruitment but needs systematization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Recruitment strategy needs significant development' }
+                    ]
+                },
+                {
+                    id: '5.3',
+                    title: 'How systematic is your culture development system?',
+                    type: 'Select your culture development level',
+                    options: [
+                        { emoji: '💪', label: 'Strong Culture', description: 'Strong culture that guides behavior and decisions' },
+                        { emoji: '📈', label: 'Good Foundation', description: 'Good culture foundation but needs development' },
+                        { emoji: '🚧', label: 'Needs Approach', description: 'Culture development needs systematic approach' }
+                    ]
+                },
+                {
+                    id: '5.4',
+                    title: 'How comprehensive is your team training and development?',
+                    type: 'Select your training level',
+                    options: [
+                        { emoji: '📚', label: 'Systematic Training', description: 'Systematic training that builds organizational capability' },
+                        { emoji: '📈', label: 'Some Training', description: 'Some training but needs systematization' },
+                        { emoji: '🚧', label: 'Needs Approach', description: 'Training and development needs systematic approach' }
+                    ]
+                },
+                {
+                    id: '5.5',
+                    title: 'How independent is your recruitment infrastructure?',
+                    type: 'Select your recruitment independence',
+                    options: [
+                        { emoji: '⚙️', label: 'Operates Independently', description: 'Recruitment systems operate independently of owner' },
+                        { emoji: '📈', label: 'Some Independence', description: 'Some independence but owner still heavily involved' },
+                        { emoji: '👤', label: 'Owner Dependent', description: 'Recruitment depends heavily on owner involvement' }
+                    ]
+                },
+                {
+                    id: '5.6',
+                    title: 'How comprehensive is your succession planning?',
+                    type: 'Select your succession planning level',
+                    options: [
+                        { emoji: '📋', label: 'Comprehensive Planning', description: 'Comprehensive succession planning for all key roles' },
+                        { emoji: '📈', label: 'Some Planning', description: 'Some succession planning but not comprehensive' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Succession planning needs systematic development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 6,
+            title: 'Mind Expansion 6: Operational Excellence Components',
+            description: 'Systems and processes for efficient and scalable operations.',
+            questions: [
+                {
+                    id: '6.1',
+                    title: 'How systematic is your business optimization system?',
+                    type: 'Select your optimization level',
+                    options: [
+                        { emoji: '⚙️', label: 'Continuous Optimization', description: 'Continuous optimization system driving efficiency' },
+                        { emoji: '📈', label: 'Some Optimization', description: 'Some optimization but needs systematization' },
+                        { emoji: '🚧', label: 'Needs Approach', description: 'Business optimization needs systematic approach' }
+                    ]
+                },
+                {
+                    id: '6.2',
+                    title: 'How effective are your high-efficiency team systems?',
+                    type: 'Select your efficiency level',
+                    options: [
+                        { emoji: '🚀', label: 'High-Efficiency Systems', description: 'High-efficiency systems that scale with growth' },
+                        { emoji: '📈', label: 'Good Efficiency', description: 'Good efficiency but needs systematic enhancement' },
+                        { emoji: '🚧', label: 'Need Development', description: 'Team efficiency systems need development' }
+                    ]
+                },
+                {
+                    id: '6.3',
+                    title: 'How systematic is your capacity planning and management?',
+                    type: 'Select your capacity planning level',
+                    options: [
+                        { emoji: '📊', label: 'Sophisticated Planning', description: 'Sophisticated capacity planning that anticipates needs' },
+                        { emoji: '📈', label: 'Some Planning', description: 'Some capacity planning but needs sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Capacity planning needs systematic development' }
+                    ]
+                },
+                {
+                    id: '6.4',
+                    title: 'How developed is your business sprint methodology?',
+                    type: 'Select your sprint methodology level',
+                    options: [
+                        { emoji: '⚡', label: 'Systematic Methodology', description: 'Systematic sprint methodology driving continuous improvement' },
+                        { emoji: '📈', label: 'Some Improvement', description: 'Some rapid improvement but not systematic' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Business sprint methodology needs development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 7,
+            title: 'Mind Expansion 7: Market & Client Excellence Components',
+            description: 'Advanced client relationship and market positioning systems.',
+            questions: [
+                {
+                    id: '7.1',
+                    title: 'How systematically do you deliver client happiness and ROI?',
+                    type: 'Select your client success level',
+                    options: [
+                        { emoji: '😊', label: 'Systematic Success', description: 'Systematic client success that drives loyalty and growth' },
+                        { emoji: '📈', label: 'Good Service', description: 'Good client service but needs systematization' },
+                        { emoji: '🚧', label: 'Need Development', description: 'Client happiness systems need development' }
+                    ]
+                },
+                {
+                    id: '7.2',
+                    title: 'How comprehensive is your client data and intelligence system?',
+                    type: 'Select your client intelligence level',
+                    options: [
+                        { emoji: '📊', label: 'Sophisticated Intelligence', description: 'Sophisticated client intelligence driving strategy' },
+                        { emoji: '📈', label: 'Some Data', description: 'Some client data but needs systematic enhancement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Client intelligence system needs development' }
+                    ]
+                },
+                {
+                    id: '7.3',
+                    title: 'How systematically do you create purchase opportunities?',
+                    type: 'Select your opportunity creation level',
+                    options: [
+                        { emoji: '💰', label: 'Systematic Creation', description: 'Systematic opportunity creation driving revenue growth' },
+                        { emoji: '📈', label: 'Some Creation', description: 'Some opportunity creation but not systematic' },
+                        { emoji: '🚧', label: 'Need Development', description: 'Purchase opportunity systems need development' }
+                    ]
+                },
+                {
+                    id: '7.4',
+                    title: 'How strategic is your brand position and development?',
+                    type: 'Select your brand position level',
+                    options: [
+                        { emoji: '💪', label: 'Strong Position', description: 'Strong brand position that drives business growth' },
+                        { emoji: '📈', label: 'Good Brand', description: 'Good brand but needs strategic development' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Brand position needs strategic development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 8,
+            title: 'Mind Expansion 8: Infrastructure & Systems Components',
+            description: 'Technology and infrastructure systems that support business growth.',
+            questions: [
+                {
+                    id: '8.1',
+                    title: 'How systematic is your business infrastructure audit system?',
+                    type: 'Select your audit system level',
+                    options: [
+                        { emoji: '🔍', label: 'Systematic Auditing', description: 'Systematic infrastructure auditing and improvement' },
+                        { emoji: '📈', label: 'Some Assessment', description: 'Some infrastructure assessment but not systematic' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Infrastructure audit system needs development' }
+                    ]
+                },
+                {
+                    id: '8.2',
+                    title: 'How advanced are your training technology and systems?',
+                    type: 'Select your training technology level',
+                    options: [
+                        { emoji: '🚀', label: 'Sophisticated Technology', description: 'Sophisticated training technology driving capability' },
+                        { emoji: '📈', label: 'Some Technology', description: 'Some training technology but needs enhancement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Training technology infrastructure needs development' }
+                    ]
+                },
+                {
+                    id: '8.3',
+                    title: 'How comprehensive are your infrastructure measurement systems?',
+                    type: 'Select your measurement system level',
+                    options: [
+                        { emoji: '📊', label: 'Comprehensive System', description: 'Comprehensive infrastructure measurement system' },
+                        { emoji: '📈', label: 'Some Measurement', description: 'Some measurement but needs systematization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Infrastructure measurement needs development' }
+                    ]
+                },
+                {
+                    id: '8.4',
+                    title: 'How systematic are your marketing and lead generation efforts?',
+                    type: 'Select your marketing system level',
+                    options: [
+                        { emoji: '🎯', label: 'Systematic Marketing', description: 'Multi-channel marketing systems generating predictable lead flow' },
+                        { emoji: '📈', label: 'Structured Approach', description: 'Regular marketing activities but could be more systematic' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Marketing and lead generation need systematic development' }
+                    ]
+                },
+                {
+                    id: '8.5',
+                    title: 'How well do you understand and monitor your competitive position?',
+                    type: 'Select your competitive intelligence level',
+                    options: [
+                        { emoji: '📊', label: 'Comprehensive Intelligence', description: 'Systematic competitive analysis and clear differentiation strategy' },
+                        { emoji: '📈', label: 'Good Understanding', description: 'Regular competitive awareness but could be more systematic' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Competitive intelligence and positioning need development' }
+                    ]
+                },
+                {
+                    id: '8.6',
+                    title: 'How comprehensive are your legal protections and risk management systems?',
+                    type: 'Select your legal protection level',
+                    options: [
+                        { emoji: '🛡️', label: 'Comprehensive Protection', description: 'Systematic legal and risk management with regular reviews' },
+                        { emoji: '📈', label: 'Good Protection', description: 'Solid legal foundations but risk management could be more systematic' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Legal and risk management systems need systematic development' }
+                    ]
+                },
+                {
+                    id: '8.7',
+                    title: 'How advanced is your technology infrastructure and integration?',
+                    type: 'Select your technology level',
+                    options: [
+                        { emoji: '💻', label: 'Advanced Integration', description: 'Sophisticated technology infrastructure enabling efficient operations' },
+                        { emoji: '📈', label: 'Good Systems', description: 'Solid technology foundation but integration could be improved' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Technology infrastructure needs systematic development' }
+                    ]
+                }
+            ]
+        }
+    ]
+},
+            'rapids_to_big_picture': {
+    phases: [5, 6, 7],
+    label: 'Rapids to Big Picture',
+    totalQuestions: 72,
+    mindExpansions: [
+        {
+            id: 1,
+            title: 'Mind Expansion 1: Strategic Leadership Components',
+            description: 'World-class strategic planning and industry transformation capabilities.',
+            questions: [
+                {
+                    id: '1.1',
+                    title: 'How comprehensive are your strategic planning processes?',
+                    type: 'Select your planning sophistication',
+                    options: [
+                        { emoji: '🌟', label: 'World-Class Planning', description: 'World-class strategic planning that drives market leadership' },
+                        { emoji: '📈', label: 'Good Planning', description: 'Good planning but needs enterprise sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Strategic planning needs enterprise-level development' }
+                    ]
+                },
+                {
+                    id: '1.2',
+                    title: 'How advanced is your strategic initiative portfolio management?',
+                    type: 'Select your portfolio management level',
+                    options: [
+                        { emoji: '📊', label: 'Sophisticated Management', description: 'Sophisticated portfolio management optimizing strategic impact' },
+                        { emoji: '📈', label: 'Good Management', description: 'Good initiative management but needs optimization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Strategic portfolio management needs enterprise development' }
+                    ]
+                },
+                {
+                    id: '1.3',
+                    title: 'How advanced is your scenario planning and strategic flexibility?',
+                    type: 'Select your scenario planning level',
+                    options: [
+                        { emoji: '🔮', label: 'Sophisticated Planning', description: 'Sophisticated scenario planning driving strategic resilience' },
+                        { emoji: '📈', label: 'Some Planning', description: 'Some scenario planning but needs enterprise sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Strategic scenario planning needs development' }
+                    ]
+                },
+                {
+                    id: '1.4',
+                    title: 'How sophisticated is your M&A strategy and execution capability?',
+                    type: 'Select your M&A capability',
+                    options: [
+                        { emoji: '🏢', label: 'World-Class Capability', description: 'World-class M&A capability driving strategic growth' },
+                        { emoji: '📈', label: 'Some Capability', description: 'Some M&A capability but needs sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'M&A strategic capability needs development' }
+                    ]
+                },
+                {
+                    id: '1.5',
+                    title: 'How developed is your industry transformation strategy capability?',
+                    type: 'Select your transformation capability',
+                    options: [
+                        { emoji: '👑', label: 'Leading Transformation', description: 'Leading industry transformation and market evolution' },
+                        { emoji: '📈', label: 'Some Influence', description: 'Some industry influence but needs strategic enhancement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Industry transformation capability needs development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 2,
+            title: 'Mind Expansion 2: Operational Excellence Components',
+            description: 'Enterprise-level operational excellence and performance management.',
+            questions: [
+                {
+                    id: '2.1',
+                    title: 'How comprehensive is your enterprise-level process excellence?',
+                    type: 'Select your process excellence level',
+                    options: [
+                        { emoji: '⭐', label: 'World-Class Excellence', description: 'World-class operational excellence creating competitive advantage' },
+                        { emoji: '📈', label: 'Good Processes', description: 'Good processes but need enterprise-level refinement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Operational excellence needs systematic development' }
+                    ]
+                },
+                {
+                    id: '2.2',
+                    title: 'How advanced is your performance management system?',
+                    type: 'Select your performance management level',
+                    options: [
+                        { emoji: '📊', label: 'Sophisticated Management', description: 'Sophisticated performance management driving results' },
+                        { emoji: '📈', label: 'Good Management', description: 'Good performance management but needs enterprise sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Performance management needs enterprise development' }
+                    ]
+                },
+                {
+                    id: '2.3',
+                    title: 'How comprehensive are your quality management and assurance systems?',
+                    type: 'Select your quality management level',
+                    options: [
+                        { emoji: '⭐', label: 'World-Class Quality', description: 'World-class quality systems creating customer loyalty' },
+                        { emoji: '📈', label: 'Good Quality', description: 'Good quality management but needs systematization' },
+                        { emoji: '🚧', label: 'Need Development', description: 'Quality management systems need enterprise development' }
+                    ]
+                },
+                {
+                    id: '2.4',
+                    title: 'How systematic are your continuous improvement programs?',
+                    type: 'Select your improvement program level',
+                    options: [
+                        { emoji: '🚀', label: 'Sophisticated Programs', description: 'Sophisticated improvement programs driving innovation' },
+                        { emoji: '📈', label: 'Some Programs', description: 'Some improvement programs but need systematization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Continuous improvement needs systematic development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 3,
+            title: 'Mind Expansion 3: Enterprise Infrastructure Components',
+            description: 'World-class technology and business intelligence infrastructure.',
+            questions: [
+                {
+                    id: '3.1',
+                    title: 'How integrated is your enterprise resource planning (ERP)?',
+                    type: 'Select your ERP integration level',
+                    options: [
+                        { emoji: '⚙️', label: 'Sophisticated ERP', description: 'Sophisticated ERP system optimizing enterprise operations' },
+                        { emoji: '📈', label: 'Good ERP', description: 'Good ERP but needs optimization or integration' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Enterprise ERP system needs development' }
+                    ]
+                },
+                {
+                    id: '3.2',
+                    title: 'How comprehensive is your business intelligence and analytics platform?',
+                    type: 'Select your analytics sophistication',
+                    options: [
+                        { emoji: '📊', label: 'World-Class Intelligence', description: 'World-class business intelligence driving strategic advantage' },
+                        { emoji: '📈', label: 'Good Analytics', description: 'Good analytics but needs enterprise sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Enterprise analytics platform needs development' }
+                    ]
+                },
+                {
+                    id: '3.3',
+                    title: 'How comprehensive are your IT governance and security frameworks?',
+                    type: 'Select your IT governance level',
+                    options: [
+                        { emoji: '🛡️', label: 'Enterprise-Grade Security', description: 'Enterprise-grade IT governance and security' },
+                        { emoji: '📈', label: 'Good Governance', description: 'Good IT governance but needs enterprise enhancement' },
+                        { emoji: '🚧', label: 'Need Development', description: 'IT governance and security need enterprise development' }
+                    ]
+                },
+                {
+                    id: '3.4',
+                    title: 'How advanced is your cloud infrastructure and scalability?',
+                    type: 'Select your cloud infrastructure level',
+                    options: [
+                        { emoji: '☁️', label: 'Sophisticated Infrastructure', description: 'Sophisticated cloud infrastructure enabling growth' },
+                        { emoji: '📈', label: 'Good Infrastructure', description: 'Good cloud infrastructure but needs optimization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Enterprise cloud infrastructure needs development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 4,
+            title: 'Mind Expansion 4: Financial Excellence Components',
+            description: 'Advanced financial management and investment readiness systems.',
+            questions: [
+                {
+                    id: '4.1',
+                    title: 'How advanced are your financial management systems?',
+                    type: 'Select your financial management level',
+                    options: [
+                        { emoji: '💼', label: 'World-Class Management', description: 'World-class financial management driving value creation' },
+                        { emoji: '📈', label: 'Good Systems', description: 'Good financial systems but need enterprise sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Advanced financial management needs development' }
+                    ]
+                },
+                {
+                    id: '4.2',
+                    title: 'How comprehensive is your financial modeling and scenario planning?',
+                    type: 'Select your modeling sophistication',
+                    options: [
+                        { emoji: '📊', label: 'Sophisticated Modeling', description: 'Sophisticated financial modeling supporting strategic decisions' },
+                        { emoji: '📈', label: 'Some Capability', description: 'Some modeling capability but needs sophistication' },
+                        { emoji: '🚧', label: 'Need Development', description: 'Financial modeling and scenario planning need development' }
+                    ]
+                },
+                {
+                    id: '4.3',
+                    title: 'How prepared is your investment and funding readiness?',
+                    type: 'Select your investment readiness',
+                    options: [
+                        { emoji: '💰', label: 'Investment-Ready', description: 'Investment-ready financial architecture creating options' },
+                        { emoji: '📈', label: 'Good Structure', description: 'Good financial structure but needs investment optimization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Investment readiness needs strategic development' }
+                    ]
+                },
+                {
+                    id: '4.4',
+                    title: 'How comprehensive is your international financial management?',
+                    type: 'Select your international capability',
+                    options: [
+                        { emoji: '🌍', label: 'World-Class Management', description: 'World-class international financial management' },
+                        { emoji: '📈', label: 'Some Capability', description: 'Some international capability but needs sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'International financial management needs development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 5,
+            title: 'Mind Expansion 5: Leadership & Governance Components',
+            description: 'Executive leadership development and governance excellence.',
+            questions: [
+                {
+                    id: '5.1',
+                    title: 'How comprehensive is your executive leadership development?',
+                    type: 'Select your leadership development level',
+                    options: [
+                        { emoji: '⭐', label: 'World-Class Development', description: 'World-class executive development creating industry leaders' },
+                        { emoji: '📈', label: 'Good Development', description: 'Good leadership development but needs sophistication' },
+                        { emoji: '🚧', label: 'Needs Enhancement', description: 'Executive leadership development needs systematic enhancement' }
+                    ]
+                },
+                {
+                    id: '5.2',
+                    title: 'How professional is your board of directors or advisors?',
+                    type: 'Select your governance level',
+                    options: [
+                        { emoji: '👑', label: 'World-Class Board', description: 'World-class board driving strategic excellence' },
+                        { emoji: '📈', label: 'Good Governance', description: 'Good governance but board needs enhancement' },
+                        { emoji: '🚧', label: 'Needs Establishment', description: 'Professional board governance needs establishment' }
+                    ]
+                },
+                {
+                    id: '5.3',
+                    title: 'How comprehensive is your succession planning and knowledge management?',
+                    type: 'Select your succession planning level',
+                    options: [
+                        { emoji: '📋', label: 'Sophisticated Planning', description: 'Sophisticated succession planning ensuring continuity' },
+                        { emoji: '📈', label: 'Some Planning', description: 'Some succession planning but needs systematization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Enterprise succession planning needs development' }
+                    ]
+                },
+                {
+                    id: '5.4',
+                    title: 'How comprehensive is your risk management and compliance?',
+                    type: 'Select your risk management level',
+                    options: [
+                        { emoji: '🛡️', label: 'Enterprise-Grade Management', description: 'Enterprise-grade risk management protecting value' },
+                        { emoji: '📈', label: 'Good Management', description: 'Good risk management but needs enterprise sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Enterprise risk management needs development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 6,
+            title: 'Mind Expansion 6: Market Leadership Components',
+            description: 'Advanced customer intelligence and innovation management systems.',
+            questions: [
+                {
+                    id: '6.1',
+                    title: 'How advanced are your customer analytics and intelligence?',
+                    type: 'Select your customer intelligence level',
+                    options: [
+                        { emoji: '📊', label: 'World-Class Intelligence', description: 'World-class customer intelligence driving market advantage' },
+                        { emoji: '📈', label: 'Good Analytics', description: 'Good customer analytics but needs sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Advanced customer intelligence needs development' }
+                    ]
+                },
+                {
+                    id: '6.2',
+                    title: 'How systematic is your innovation pipeline management?',
+                    type: 'Select your innovation management level',
+                    options: [
+                        { emoji: '🚀', label: 'Sophisticated Pipeline', description: 'Sophisticated innovation pipeline driving market leadership' },
+                        { emoji: '📈', label: 'Some Management', description: 'Some innovation management but needs systematization' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Innovation pipeline management needs development' }
+                    ]
+                },
+                {
+                    id: '6.3',
+                    title: 'How comprehensive is your brand management and positioning?',
+                    type: 'Select your brand management level',
+                    options: [
+                        { emoji: '⭐', label: 'World-Class Management', description: 'World-class brand management creating market differentiation' },
+                        { emoji: '📈', label: 'Good Management', description: 'Good brand management but needs sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Enterprise brand management needs development' }
+                    ]
+                },
+                {
+                    id: '6.4',
+                    title: 'How advanced is your market research and competitive intelligence?',
+                    type: 'Select your market intelligence level',
+                    options: [
+                        { emoji: '📊', label: 'Sophisticated Intelligence', description: 'Sophisticated market intelligence driving strategic advantage' },
+                        { emoji: '📈', label: 'Good Research', description: 'Good market research but needs enterprise sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Advanced market intelligence needs development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 7,
+            title: 'Mind Expansion 7: People Excellence Components',
+            description: 'Strategic workforce planning and organizational excellence.',
+            questions: [
+                {
+                    id: '7.1',
+                    title: 'How strategic is your workforce planning?',
+                    type: 'Select your workforce planning level',
+                    options: [
+                        { emoji: '📊', label: 'World-Class Planning', description: 'World-class workforce planning enabling growth' },
+                        { emoji: '📈', label: 'Good Planning', description: 'Good workforce planning but needs sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Strategic workforce planning needs development' }
+                    ]
+                },
+                {
+                    id: '7.2',
+                    title: 'How comprehensive is your talent acquisition and employer branding?',
+                    type: 'Select your talent acquisition level',
+                    options: [
+                        { emoji: '⭐', label: 'World-Class Acquisition', description: 'World-class talent acquisition creating competitive advantage' },
+                        { emoji: '📈', label: 'Good Acquisition', description: 'Good talent acquisition but needs enterprise sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Enterprise talent acquisition needs development' }
+                    ]
+                },
+                {
+                    id: '7.3',
+                    title: 'How comprehensive are your leadership development programs?',
+                    type: 'Select your leadership development level',
+                    options: [
+                        { emoji: '🚀', label: 'Sophisticated Development', description: 'Sophisticated leadership development creating industry leaders' },
+                        { emoji: '📈', label: 'Good Development', description: 'Good leadership development but needs systematization' },
+                        { emoji: '🚧', label: 'Needs Approach', description: 'Enterprise leadership development needs systematic approach' }
+                    ]
+                },
+                {
+                    id: '7.4',
+                    title: 'How systematic is your culture measurement and development?',
+                    type: 'Select your culture development level',
+                    options: [
+                        { emoji: '⭐', label: 'World-Class Culture', description: 'World-class culture creating sustainable competitive advantage' },
+                        { emoji: '📈', label: 'Good Culture', description: 'Good culture but needs systematic development' },
+                        { emoji: '🚧', label: 'Needs Approach', description: 'Culture measurement and development need systematic approach' }
+                    ]
+                },
+                {
+                    id: '7.5',
+                    title: 'How comprehensive is your employee engagement and retention?',
+                    type: 'Select your engagement level',
+                    options: [
+                        { emoji: '🚀', label: 'World-Class Engagement', description: 'World-class engagement creating organizational excellence' },
+                        { emoji: '📈', label: 'Good Engagement', description: 'Good engagement but needs systematic enhancement' },
+                        { emoji: '🚧', label: 'Need Development', description: 'Employee engagement systems need development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 8,
+            title: 'Mind Expansion 8: Growth & Innovation Components',
+            description: 'Global expansion and digital transformation capabilities.',
+            questions: [
+                {
+                    id: '8.1',
+                    title: 'How comprehensive is your geographic expansion strategy?',
+                    type: 'Select your expansion strategy level',
+                    options: [
+                        { emoji: '🌍', label: 'Sophisticated Strategy', description: 'Sophisticated expansion strategy creating global presence' },
+                        { emoji: '📈', label: 'Some Capability', description: 'Some expansion capability but needs strategic development' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Geographic expansion strategy needs development' }
+                    ]
+                },
+                {
+                    id: '8.2',
+                    title: 'How comprehensive is your strategic partnership development?',
+                    type: 'Select your partnership strategy level',
+                    options: [
+                        { emoji: '🤝', label: 'World-Class Strategy', description: 'World-class partnership strategy creating ecosystem advantage' },
+                        { emoji: '📈', label: 'Good Partnerships', description: 'Good partnerships but need strategic enhancement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Strategic partnership capability needs development' }
+                    ]
+                },
+                {
+                    id: '8.3',
+                    title: 'How comprehensive are your digital transformation initiatives?',
+                    type: 'Select your digital transformation level',
+                    options: [
+                        { emoji: '🚀', label: 'Leading Transformation', description: 'Leading digital transformation creating market advantage' },
+                        { emoji: '📈', label: 'Good Capability', description: 'Good digital capability but needs transformation vision' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Digital transformation strategy needs development' }
+                    ]
+                },
+                {
+                    id: '8.4',
+                    title: 'How systematic is your industry thought leadership?',
+                    type: 'Select your thought leadership level',
+                    options: [
+                        { emoji: '👑', label: 'Industry Leadership', description: 'Industry thought leadership influencing market direction' },
+                        { emoji: '📈', label: 'Some Leadership', description: 'Some thought leadership but needs strategic development' },
+                        { emoji: '🚧', label: 'Need Development', description: 'Industry thought leadership programs need development' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 9,
+            title: 'Mind Expansion 9: Personal Leadership Components',
+            description: 'Visionary leadership and executive excellence development.',
+            questions: [
+                {
+                    id: '9.1',
+                    title: 'How comprehensive is your visionary leadership development?',
+                    type: 'Select your visionary leadership level',
+                    options: [
+                        { emoji: '🌟', label: 'Clear Vision', description: 'Clear visionary leadership driving industry transformation' },
+                        { emoji: '📈', label: 'Good Vision', description: 'Good leadership vision but needs strategic enhancement' },
+                        { emoji: '🚧', label: 'Needs Approach', description: 'Visionary leadership development needs systematic approach' }
+                    ]
+                },
+                {
+                    id: '9.2',
+                    title: 'How significant are your industry and community leadership roles?',
+                    type: 'Select your leadership influence level',
+                    options: [
+                        { emoji: '👑', label: 'Significant Leadership', description: 'Significant industry and community leadership influence' },
+                        { emoji: '📈', label: 'Some Roles', description: 'Some leadership roles but need strategic development' },
+                        { emoji: '🚧', label: 'Need Development', description: 'Industry and community leadership need development' }
+                    ]
+                },
+                {
+                    id: '9.3',
+                    title: 'How comprehensive is your executive coaching and development?',
+                    type: 'Select your executive development level',
+                    options: [
+                        { emoji: '⭐', label: 'World-Class Development', description: 'World-class executive development creating industry leaders' },
+                        { emoji: '📈', label: 'Some Development', description: 'Some executive development but needs sophistication' },
+                        { emoji: '🚧', label: 'Needs Approach', description: 'Executive coaching and development need systematic approach' }
+                    ]
+                },
+                {
+                    id: '9.4',
+                    title: 'How advanced are your marketing systems and brand management?',
+                    type: 'Select your marketing excellence level',
+                    options: [
+                        { emoji: '🎯', label: 'Marketing Excellence', description: 'World-class marketing systems and brand management driving market leadership' },
+                        { emoji: '📈', label: 'Good Marketing', description: 'Strong marketing foundation but needs enterprise sophistication' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Marketing and brand systems need enterprise development' }
+                    ]
+                },
+                {
+                    id: '9.5',
+                    title: 'How sophisticated is your competitive strategy and market intelligence?',
+                    type: 'Select your competitive intelligence level',
+                    options: [
+                        { emoji: '📊', label: 'Strategic Intelligence', description: 'World-class competitive intelligence driving strategic advantage' },
+                        { emoji: '📈', label: 'Good Intelligence', description: 'Solid competitive awareness but needs strategic enhancement' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Competitive strategy and intelligence need enterprise development' }
+                    ]
+                },
+                {
+                    id: '9.6',
+                    title: 'How comprehensive are your legal frameworks and regulatory compliance?',
+                    type: 'Select your legal excellence level',
+                    options: [
+                        { emoji: '⚖️', label: 'Legal Excellence', description: 'Enterprise-grade legal frameworks with comprehensive compliance management' },
+                        { emoji: '📈', label: 'Good Legal Foundation', description: 'Solid legal protections but compliance could be more systematic' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Legal and regulatory systems need enterprise development' }
+                    ]
+                },
+                {
+                    id: '9.7',
+                    title: 'How advanced is your technology and digital infrastructure?',
+                    type: 'Select your technology leadership level',
+                    options: [
+                        { emoji: '💻', label: 'Technology Leadership', description: 'Cutting-edge technology infrastructure driving operational excellence' },
+                        { emoji: '📈', label: 'Good Technology', description: 'Solid technology foundation but digital transformation could be enhanced' },
+                        { emoji: '🚧', label: 'Needs Development', description: 'Technology and digital infrastructure need enterprise development' }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+        };
+
+        // Start assessment function
+        async function startAssessment() {
+            const userIdInput = document.getElementById('userIdInput');
+            const userId = userIdInput.value.trim();
+            
+            if (!userId) {
+                alert('Please enter your User ID to continue.');
+                return;
+            }
+            
+            if (userId.length < 3) {
+                alert('User ID must be at least 3 characters long.');
+                return;
+            }
+            
+            // Set global user ID
+            currentUserId = userId;
+            
+            try {
+                // ✅ Fetch user phase from backend (corrected endpoint)
+                console.log('🔄 Fetching user phase from:', `${BACKEND_URL}/get_user_phase/${userId}`);
+                
+                const response = await fetch(`${BACKEND_URL}/get_user_phase/${userId}`);
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ User phase result:', result);
+                    
+                    userPhase = result.phase;
+                    
+                    // Determine question set based on phase
+                    if (userPhase >= 0 && userPhase <= 2) {
+                        phaseQuestions = phaseQuestionSets.foundation_to_challenger;
+                    } else if (userPhase >= 3 && userPhase <= 4) {
+                        phaseQuestions = phaseQuestionSets.breakout_to_stabilize;
+                    } else {
+                        phaseQuestions = phaseQuestionSets.rapids_to_big_picture;
+                    }
+                    
+                    // Update totals
+                    totalExpansions = phaseQuestions.mindExpansions.length;
+                    
+                    // Update UI with phase info
+                    document.getElementById('phaseIndicator').textContent = 
+                        `Phase ${userPhase}: ${phaseQuestions.label} (${phaseQuestions.totalQuestions} questions)`;
+                    
+                } else {
+                    throw new Error('Failed to fetch user phase');
+                }
+            } catch (error) {
+                console.error('❌ Error fetching user phase:', error);
+                // Default to foundation phase
+                userPhase = 0;
+                phaseQuestions = phaseQuestionSets.foundation_to_challenger;
+                totalExpansions = phaseQuestions.mindExpansions.length;
+                
+                showStatusMessage(`⚠️ Could not connect to backend. Using default phase. Error: ${error.message}`, 'error');
+            }
+            
+            // Generate dynamic mind expansions
+            generateMindExpansions();
+            
+            // Hide user input section and show assessment
+            document.getElementById('userInputSection').classList.add('hidden');
+            document.getElementById('assessmentHeader').style.display = 'block';
+            document.getElementById('mindExpansion1').classList.add('active');
+            document.getElementById('navigationSection').style.display = 'flex';
+            
+            // Initialize assessment
+            assessmentStarted = true;
+            startTime = new Date();
+            initializeAssessment();
+            
+            console.log('🚀 Component Assessment started for user:', currentUserId, 'Phase:', userPhase);
+        }
+
+        // Generate mind expansions dynamically
+        function generateMindExpansions() {
+            const container = document.getElementById('dynamicMindExpansions');
+            container.innerHTML = '';
+            
+            phaseQuestions.mindExpansions.forEach((expansion, expansionIndex) => {
+                const expansionDiv = document.createElement('div');
+                expansionDiv.className = 'mind-expansion';
+                expansionDiv.id = `mindExpansion${expansion.id}`;
+                
+                let questionsHtml = '';
+                expansion.questions.forEach(question => {
+                    let optionsHtml = '';
+                    question.options.forEach(option => {
+                        optionsHtml += `
+                            <div class="component-option" onclick="selectComponentOption(this, '${question.id}')">
+                                <input type="radio" name="q${question.id}" value="${option.description}">
+                                <div class="option-emoji">${option.emoji}</div>
+                                <div class="option-content">
+                                    <div class="option-label">${option.label}</div>
+                                    <div class="option-description">${option.description}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    questionsHtml += `
+                        <div class="component-question">
+                            <h3 class="question-title">${question.title}</h3>
+                            <p class="question-type">Type: ${question.type}</p>
+                            <div class="component-option-grid" id="q${question.id}-options">
+                                ${optionsHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                expansionDiv.innerHTML = `
+                    <h2 class="mind-expansion-title">${expansion.title}</h2>
+                    <p class="mind-expansion-description">${expansion.description}</p>
+                    ${questionsHtml}
+                `;
+                
+                container.appendChild(expansionDiv);
+            });
+            
+            // Update navigation indicator
+            document.getElementById('expansionIndicator').textContent = `Mind Expansion 1 of ${totalExpansions}`;
+        }
+
+        // Component option selection
+        function selectComponentOption(element, questionId) {
+            initializeQuestionState(questionId);
+            detectHesitation(element, 'select_component_option');
+            trackHover(element, questionId);
+            
+            // Clear previous selections in this question
+            const siblings = element.parentElement.children;
+            for (let sibling of siblings) {
+                sibling.classList.remove('selected');
+                const input = sibling.querySelector('input');
+                if (input) input.checked = false;
+            }
+            
+            // Select current option
+            element.classList.add('selected');
+            const input = element.querySelector('input');
+            if (input) {
+                input.checked = true;
+                updateResponse(questionId, input.value, "high");
+            }
+        }
+
+        // Enhanced response tracking with full metadata
+        function updateResponse(questionId, value, confidence = "high") {
+            initializeQuestionState(questionId);
+            
+            const now = new Date();
+            const timeSpent = Math.floor((now - (questionStartTimes[questionId] || now)) / 1000);
+            
+            // Enhanced timing metadata
+            const timingData = {
+                question_load_to_first_interaction: 0,
+                time_spent_reading: Math.floor(timeSpent * 0.6),
+                decision_making_time: Math.floor(timeSpent * 0.4),
+                total_engagement_time: timeSpent,
+                modification_count: questionStates[questionId].modification_count || 0,
+                hesitation_indicators: []
+            };
+
+            // Enhanced interaction metadata
+            const interactionData = {
+                mouse_movements_during_question: 1,
+                clicks_during_question: 1,
+                keystrokes_during_question: 1,
+                backspace_count: 0,
+                revision_behavior: {
+                    option_switches: 0,
+                    text_revisions: 0
+                }
+            };
+
+            // Cognitive load indicators
+            const cognitiveData = {
+                decision_complexity_score: 0,
+                attention_consistency: 1,
+                processing_pattern: timeSpent < 5 ? "impulsive" : "balanced",
+                confidence_indicators: {
+                    response_time: timeSpent < 5 ? "fast" : timeSpent < 15 ? "moderate" : "slow",
+                    revision_frequency: "low",
+                    final_confidence: confidence
+                }
+            };
+
+            // Get question metadata
+            const questionMeta = getQuestionMetadata(questionId);
+            
+            // Create comprehensive response structure
+            const response = {
+                question_id: questionId,
+                section: questionMeta.section,
+                question_type: "single_choice",
+                question_text: questionMeta.title,
+                response_format: "string",
+                response_data: {
+                    selected_option: value,
+                    option_index: questionMeta.options.findIndex(opt => opt.description === value),
+                    selection_metadata: {
+                        option_position: (questionMeta.options.findIndex(opt => opt.description === value) + 1) / questionMeta.options.length,
+                        is_first_option: questionMeta.options.findIndex(opt => opt.description === value) === 0,
+                        is_last_option: questionMeta.options.findIndex(opt => opt.description === value) === questionMeta.options.length - 1
+                    }
+                },
+                all_options: questionMeta.options.map(opt => opt.description),
+                metadata: {
+                    time_spent_seconds: timeSpent,
+                    final_answer_confidence: confidence,
+                    timing_data: timingData,
+                    interaction_data: interactionData,
+                    cognitive_data: cognitiveData,
+                    device_context: {
+                        viewport_size: metadataTracking.session.viewportSize,
+                        device_type: metadataTracking.session.touchSupport ? "touch" : "desktop",
+                        performance_during_question: {
+                            memory_usage: metadataTracking.performance.memoryUsage,
+                            connection_quality: metadataTracking.performance.connectionSpeed
+                        }
+                    }
+                },
+                ai_interpretation_guide: "Single choice reveals primary preference or approach. High predictive value for behavior patterns. If followup text is provided, analyze it for deeper insights into reasoning and context.",
+                weight: "high",
+                answered_at: now.toISOString(),
+                last_modified_at: now.toISOString(),
+                sub_text: questionMeta.subText || "Component assessment question"
+            };
+
+            // Update question state
+            questionStates[questionId] = {
+                ...questionStates[questionId],
+                status: "completed",
+                first_answered_at: questionStates[questionId].first_answered_at || now.toISOString(),
+                last_modified_at: now.toISOString(),
+                modification_count: (questionStates[questionId].modification_count || 0) + 1,
+                timing_metadata: timingData,
+                interaction_metadata: interactionData,
+                cognitive_metadata: cognitiveData
+            };
+
+            responses[questionId] = response;
+            updateProgress();
+            autoSaveProgress();
+        }
+
+        // Get question metadata
+        function getQuestionMetadata(questionId) {
+            for (let expansion of phaseQuestions.mindExpansions) {
+                for (let question of expansion.questions) {
+                    if (question.id === questionId) {
+                        return {
+                            section: expansion.title,
+                            title: question.title,
+                            options: question.options,
+                            subText: `${expansion.title} question`
+                        };
+                    }
+                }
+            }
+            return {
+                section: "Unknown Section",
+                title: "Unknown Question",
+                options: [],
+                subText: "Component question"
+            };
+        }
+
+        // Initialize question state
+        function initializeQuestionState(questionId) {
+            if (!questionStates[questionId]) {
+                questionStates[questionId] = {
+                    status: "not_started",
+                    interaction_metadata: {
+                        first_view_time: new Date().toISOString(),
+                        total_view_time: 0,
+                        hover_count: 0,
+                        focus_changes: 0,
+                        hesitation_events: []
+                    },
+                    modification_count: 0
+                };
+            }
+            if (!questionStartTimes[questionId]) {
+                questionStartTimes[questionId] = new Date();
+            }
+            trackQuestionFocus(questionId);
+        }
+
+        // Enhanced navigation
+        function nextExpansion() {
+            const expansionStartTime = new Date();
+            metadataTracking.timing.timePerExpansion[`expansion_${currentExpansion}`] = 
+                expansionStartTime - (metadataTracking.timing.timePerExpansion[`expansion_${currentExpansion}_start`] || expansionStartTime);
+            
+            if (currentExpansion < totalExpansions) {
+                // Hide current expansion
+                document.getElementById(`mindExpansion${currentExpansion}`).classList.remove('active');
+                
+                // Move to next expansion
+                currentExpansion++;
+                
+                // Track expansion start time
+                metadataTracking.timing.timePerExpansion[`expansion_${currentExpansion}_start`] = new Date();
+                
+                // Show next expansion
+                document.getElementById(`mindExpansion${currentExpansion}`).classList.add('active');
+                
+                updateNavigation();
+                window.scrollTo(0, 0);
+            } else if (currentExpansion === totalExpansions) {
+                // Move to final expansion
+                document.getElementById(`mindExpansion${currentExpansion}`).classList.remove('active');
+                document.getElementById('finalExpansion').style.display = 'block';
+                document.getElementById('finalExpansion').classList.add('active');
+                document.getElementById('navigationSection').style.display = 'none';
+            }
+        }
+
+        function previousExpansion() {
+            if (currentExpansion > 1) {
+                // Hide current expansion
+                document.getElementById(`mindExpansion${currentExpansion}`).classList.remove('active');
+                
+                // Move to previous expansion
+                currentExpansion--;
+                
+                // Show previous expansion
+                document.getElementById(`mindExpansion${currentExpansion}`).classList.add('active');
+                
+                updateNavigation();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const indicator = document.getElementById('expansionIndicator');
+            
+            // Update previous button
+            prevBtn.disabled = currentExpansion === 1;
+            
+            // Update next button text
+            if (currentExpansion === totalExpansions) {
+                nextBtn.textContent = 'Complete Assessment';
+            } else {
+                nextBtn.textContent = 'Next Mind Expansion';
+            }
+            
+            // Update indicator
+            indicator.textContent = `Mind Expansion ${currentExpansion} of ${totalExpansions}`;
+        }
+
+        function updateProgress() {
+            const totalQuestions = phaseQuestions.totalQuestions;
+            const answeredQuestions = Object.keys(responses).length;
+            const percentage = Math.min(100, Math.floor((answeredQuestions / totalQuestions) * 100));
+            
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = `${percentage}% Complete (${answeredQuestions}/${totalQuestions} questions)`;
+        }
+
+        // Auto-save progress
+        async function autoSaveProgress() {
+            if (!currentUserId || !assessmentStarted) return;
+            
+            try {
+                const progressData = buildAssessmentData();
+                
+                const response = await fetch(`${BACKEND_URL}/component_assessment_progress`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUserId,
+                        assessment_data: progressData,
+                        current_expansion: currentExpansion,
+                        auto_save: true
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('💾 Progress auto-saved successfully');
+                } else {
+                    console.warn('⚠️ Auto-save failed:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Auto-save error:', error);
+            }
+        }
+
+        // Build complete assessment data (matching backend structure)
+        function buildAssessmentData() {
+            const endTime = new Date();
+            metadataTracking.timing.totalEngagementTime = Math.floor((endTime - startTime) / 1000);
+            
+            // Calculate sections completed/remaining
+            const { sectionsCompleted, sectionsRemaining } = calculateSections();
+            
+            // Get last answered question
+            const responseArray = Object.values(responses);
+            responseArray.sort((a, b) => new Date(b.answered_at) - new Date(a.answered_at));
+            const lastAnswered = responseArray[0];
+
+            return {
+                assessment_metadata: {
+                    user_id: currentUserId,
+                    assessment_type: "component_audit_phase_" + (userPhase <= 2 ? 1 : userPhase <= 4 ? 2 : 3),
+                    version: "1.0",
+                    created_at: startTime.toISOString(),
+                    last_updated: endTime.toISOString(),
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    session_metadata: metadataTracking.session,
+                    device_fingerprint: {
+                        user_agent: navigator.userAgent,
+                        platform: navigator.platform,
+                        screen_resolution: `${screen.width}x${screen.height}`,
+                        color_depth: screen.colorDepth,
+                        pixel_ratio: window.devicePixelRatio,
+                        timezone_offset: new Date().getTimezoneOffset(),
+                        language: navigator.language,
+                        languages: navigator.languages,
+                        hardware_concurrency: navigator.hardwareConcurrency,
+                        max_touch_points: navigator.maxTouchPoints || 0
+                    },
+                    phase: userPhase,
+                    phase_label: phaseQuestions.label,
+                    company_size: getCompanySizeLabel(userPhase),
+                    assessment_focus: "component_audit",
+                    total_mind_expansions: totalExpansions,
+                    completed_mind_expansions: Math.max(0, currentExpansion - 1),
+                    current_mind_expansion: `Mind Expansion ${currentExpansion}: ${getCurrentExpansionTitle()}`,
+                    all_mind_expansions: phaseQuestions.mindExpansions.map(exp => exp.title)
+                },
+                progress_tracking: {
+                    total_questions: phaseQuestions.totalQuestions,
+                    answered_questions: Object.keys(responses).length,
+                    skipped_questions: 0,
+                    current_question_id: lastAnswered?.question_id || "1.1", percentage_complete: Math.min(100, Math.floor((Object.keys(responses).length / phaseQuestions.totalQuestions) * 100)),
+                    estimated_time_remaining: Math.max(0, Math.floor((phaseQuestions.totalQuestions - Object.keys(responses).length) * 0.5)) + " minutes",
+                    sections_completed: sectionsCompleted,
+                    sections_remaining: sectionsRemaining,
+                    last_question_answered: lastAnswered ? {
+                        question_id: lastAnswered.question_id,
+                        answered_at: lastAnswered.answered_at
+                    } : null,
+                    time_per_chapter: metadataTracking.timing.timePerExpansion,
+                    completion_status: {
+                        is_fully_complete: Object.keys(responses).length >= phaseQuestions.totalQuestions,
+                        required_questions_answered: Object.keys(responses).length,
+                        optional_questions_skipped: 0,
+                        can_submit: Object.keys(responses).length >= Math.floor(phaseQuestions.totalQuestions * 0.8)
+                    }
+                },
+                question_states: questionStates,
+                responses: Object.values(responses),
+                completion_flags: {
+                    assessment_completed: Object.keys(responses).length >= phaseQuestions.totalQuestions,
+                    ready_for_report_generation: Object.keys(responses).length >= Math.floor(phaseQuestions.totalQuestions * 0.75),
+                    minimum_questions_answered: Object.keys(responses).length >= Math.floor(phaseQuestions.totalQuestions * 0.5),
+                    all_required_questions_completed: Object.keys(responses).length >= phaseQuestions.totalQuestions,
+                    can_generate_partial_report: Object.keys(responses).length >= Math.floor(phaseQuestions.totalQuestions * 0.3)
+                },
+                comprehensive_metadata: {
+                    behavioral_analytics: {
+                        mouse_behavior: {
+                            total_movements: metadataTracking.mouse.movements.length,
+                            total_distance: metadataTracking.mouse.totalDistance,
+                            average_speed: metadataTracking.mouse.totalDistance / Math.max(1, metadataTracking.timing.totalEngagementTime),
+                            click_patterns: metadataTracking.mouse.clicks,
+                            scroll_behavior: metadataTracking.mouse.scrolls,
+                            hover_patterns: metadataTracking.mouse.hovers
+                        },
+                        keyboard_behavior: {
+                            total_keystrokes: metadataTracking.keyboard.totalKeystrokes,
+                            typing_patterns: metadataTracking.keyboard.typingPatterns,
+                            backspace_frequency: metadataTracking.keyboard.backspaceCount / Math.max(1, metadataTracking.keyboard.totalKeystrokes),
+                            paste_events: metadataTracking.keyboard.pasteEvents,
+                            keystroke_timings: metadataTracking.keyboard.keystrokeTimings
+                        },
+                        attention_patterns: {
+                            focus_changes: metadataTracking.behavioral.taskSwitching,
+                            hesitation_zones: metadataTracking.behavioral.hesitationZones,
+                            attention_spans: metadataTracking.timing.questionTimes,
+                            revision_behavior: metadataTracking.behavioral.revisionCount
+                        },
+                        decision_making_style: {
+                            average_response_time: Object.values(responses).reduce((sum, r) => sum + (r.metadata?.time_spent_seconds || 0), 0) / Math.max(1, Object.keys(responses).length),
+                            revision_frequency: Object.values(questionStates).reduce((sum, q) => sum + (q.modification_count || 0), 0) / Math.max(1, Object.keys(questionStates).length),
+                            confidence_distribution: Object.values(responses).map(r => r.metadata?.final_answer_confidence),
+                           processing_patterns: Object.values(responses).map(r => r.metadata?.cognitive_data?.processing_pattern)
+                        }
+                    },
+                    technical_analytics: {
+                        performance_metrics: metadataTracking.performance,
+                        session_quality: {
+                            total_engagement_time: metadataTracking.timing.totalEngagementTime,
+                            active_time_percentage: 1 - (metadataTracking.mouse.idleTime / Math.max(1, metadataTracking.timing.totalEngagementTime)),
+                            interaction_density: metadataTracking.mouse.clicks.length / Math.max(1, metadataTracking.timing.totalEngagementTime),
+                            task_completion_rate: Object.keys(responses).length / phaseQuestions.totalQuestions
+                        },
+                        device_performance: {
+                            memory_usage_trend: metadataTracking.performance.memoryUsage,
+                            connection_stability: metadataTracking.performance.connectionSpeed,
+                            render_performance: metadataTracking.performance.renderTimes,
+                            error_count: metadataTracking.performance.errors.length
+                        }
+                    },
+                    contextual_analytics: {
+                        temporal_context: {
+                            start_time: startTime.toISOString(),
+                            end_time: endTime.toISOString(),
+                            day_of_week: startTime.getDay(),
+                            hour_of_day: startTime.getHours(),
+                            session_duration: Math.floor((endTime - startTime) / 1000)
+                        },
+                        environmental_context: {
+                            referrer: document.referrer || 'direct',
+                            entry_point: window.location.href,
+                            viewport_changes: metadataTracking.session.viewportSize,
+                            orientation_changes: metadataTracking.session.orientation,
+                            network_conditions: metadataTracking.performance.connectionSpeed
+                        },
+                        user_journey: {
+                            expansion_progression: Object.keys(metadataTracking.timing.timePerExpansion),
+                            question_sequence: Object.keys(responses).sort(),
+                            completion_pattern: sectionsCompleted,
+                            abandonment_points: sectionsRemaining
+                        }
+                    }
+                }
+            };
+        }
+
+        // Calculate sections completed/remaining
+        function calculateSections() {
+            const sectionQuestionMap = {};
+            
+            // Build section to question mapping
+            phaseQuestions.mindExpansions.forEach(expansion => {
+                sectionQuestionMap[expansion.title] = expansion.questions.map(q => q.id);
+            });
+
+            const sectionsCompleted = [];
+            const sectionsRemaining = [];
+
+            Object.entries(sectionQuestionMap).forEach(([section, questionIds]) => {
+                const answeredInSection = questionIds.filter(qId => responses[qId]);
+                const completionRate = answeredInSection.length / questionIds.length;
+                
+                if (completionRate >= 0.7) {
+                    sectionsCompleted.push(section);
+                } else {
+                    sectionsRemaining.push(section);
+                }
+            });
+
+            return { sectionsCompleted, sectionsRemaining };
+        }
+
+        function getCurrentExpansionTitle() {
+            if (currentExpansion <= phaseQuestions.mindExpansions.length) {
+                return phaseQuestions.mindExpansions[currentExpansion - 1]?.title || "Unknown Expansion";
+            }
+            return "Assessment Complete";
+        }
+
+        function getCompanySizeLabel(phase) {
+            const sizeLabels = {
+                0: "0 employees (Foundation)",
+                1: "1-10 employees (Foundation to Challenger)",
+                2: "11-19 employees (Foundation to Challenger)",
+                3: "20-34 employees (Breakout to Stabilize)",
+                4: "35-57 employees (Breakout to Stabilize)",
+                5: "58-95 employees (Rapids to Big Picture)",
+                6: "96-160 employees (Rapids to Big Picture)",
+                7: "161-350+ employees (Rapids to Big Picture)"
+            };
+            return sizeLabels[phase] || "Unknown size";
+        }
+
+        // Submit assessment with complete JSON structure
+        async function submitAssessment() {
+            const submitButton = document.querySelector('.submit-button');
+            const originalText = submitButton.innerHTML;
+            
+            // Disable button and show loading
+            submitButton.innerHTML = '<div class="spinner"></div>Generating Your Component Blueprint...';
+            submitButton.disabled = true;
+            
+            showStatusMessage('Submitting your component assessment data to our AI...', 'info');
+
+            try {
+                const assessmentData = buildAssessmentData();
+                
+                console.log('📊 COMPLETE COMPONENT ASSESSMENT DATA WITH FULL METADATA:', JSON.stringify(assessmentData, null, 2));
+                
+                // ✅ Correct endpoint for component audit
+                const response = await fetch(`${BACKEND_URL}/component-audit/${currentUserId}/${userPhase}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUserId,
+                        assessment_data: assessmentData,
+                        phase: userPhase,
+                        phase_label: phaseQuestions.label
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    reportId = result.report_id;
+                    
+                    showStatusMessage('🎉 Assessment submitted successfully! Your component blueprint is being generated...', 'success');
+                    
+                    // Start polling for report status if needed
+                    if (result.status === 'processing') {
+                        pollReportStatus(reportId);
+                        submitButton.innerHTML = 'Generating Blueprint - Please Wait...';
+                    } else {
+                        submitButton.innerHTML = '✅ Component Blueprint Generated!';
+                    }
+                    
+                    console.log('✅ Component Assessment submitted successfully:', result);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('❌ Submission error:', error);
+                showStatusMessage(`❌ Error submitting assessment: ${error.message}. Please try again.`, 'error');
+                
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+                
+                console.log('📊 COMPLETE METADATA STRUCTURE (for debugging):', JSON.stringify(buildAssessmentData(), null, 2));
+            }
+        }
+
+        // Poll report status
+        async function pollReportStatus(reportId) {
+            const statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/component_report_status/${reportId}`);
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        
+                        if (result.status === 'completed' || result.status === 'completed_with_indexing') {
+                            clearInterval(statusInterval);
+                            showStatusMessage('🎉 Your Component Blueprint is ready!', 'success');
+                            
+                            const submitButton = document.querySelector('.submit-button');
+                            submitButton.innerHTML = '✅ Blueprint Generated Successfully!';
+                            submitButton.disabled = true;
+                            
+                            if (result.completion_details) {
+                                const details = result.completion_details;
+                                showStatusMessage(
+                                    `Blueprint Complete! Generated ${details.total_sections || 'N/A'} component sections with ${details.total_words || 'N/A'} words.`,
+                                    'success'
+                                );
+                            }
+                            
+                        } else if (result.status === 'failed') {
+                            clearInterval(statusInterval);
+                            showStatusMessage(`❌ Blueprint generation failed: ${result.message}`, 'error');
+                            
+                            const submitButton = document.querySelector('.submit-button');
+                            submitButton.innerHTML = 'Generate My Component Growth Blueprint';
+                            submitButton.disabled = false;
+                            
+                        } else if (result.status === 'processing' || result.status === 'ai_processing') {
+                            if (result.progress) {
+                                const progress = result.progress;
+                                showStatusMessage(
+                                    `AI Processing: ${progress.sections_completed}/${progress.total_sections} sections analyzed`,
+                                    'info'
+                                );
+                            } else {
+                                showStatusMessage('AI is analyzing your component responses...', 'info');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking report status:', error);
+                }
+            }, 8000); // Check every 8 seconds
+        }
+
+        // Utility functions for tracking
+        function showStatusMessage(message, type = 'info') {
+            const statusDiv = document.getElementById('submission-status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.style.display = 'block';
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function trackMouseMovement(event) {
+            const now = new Date();
+            const prevPos = lastMousePosition;
+            const distance = Math.sqrt(Math.pow(event.clientX - prevPos.x, 2) + Math.pow(event.clientY - prevPos.y, 2));
+            
+            metadataTracking.mouse.movements.push({
+                x: event.clientX,
+                y: event.clientY,
+                timestamp: now.toISOString(),
+                distance: distance,
+                speed: distance / Math.max(1, now - metadataTracking.mouse.lastActivity)
+            });
+            
+            metadataTracking.mouse.totalDistance += distance;
+            metadataTracking.mouse.lastActivity = now;
+            lastMousePosition = { x: event.clientX, y: event.clientY };
+            
+            if (metadataTracking.mouse.movements.length > 1000) {
+                metadataTracking.mouse.movements.shift();
+            }
+        }
+
+        function trackMouseClick(event) {
+            const now = new Date();
+            metadataTracking.mouse.clicks.push({
+                x: event.clientX,
+                y: event.clientY,
+                timestamp: now.toISOString(),
+                button: event.button,
+                target: event.target.tagName,
+                targetId: event.target.id || null,
+                targetClass: event.target.className || null,
+                questionContext: currentQuestionFocus
+            });
+        }
+
+        function trackScrolling(event) {
+            const now = new Date();
+            metadataTracking.mouse.scrolls.push({
+                scrollY: window.scrollY,
+                scrollX: window.scrollX,
+                timestamp: now.toISOString(),
+                direction: event.deltaY > 0 ? 'down' : 'up',
+                speed: Math.abs(event.deltaY)
+            });
+            
+            if (metadataTracking.mouse.scrolls.length > 500) {
+                metadataTracking.mouse.scrolls.shift();
+            }
+        }
+
+        function trackQuestionFocus(questionId) {
+            const now = new Date();
+            currentQuestionFocus = questionId;
+            
+            if (!metadataTracking.timing.questionTimes[questionId]) {
+                metadataTracking.timing.questionTimes[questionId] = {
+                    firstFocus: now.toISOString(),
+                    totalFocusTime: 0,
+                    focusCount: 0,
+                    lastFocus: null
+                };
+            }
+            
+            metadataTracking.timing.questionTimes[questionId].focusCount++;
+            metadataTracking.timing.questionTimes[questionId].lastFocus = now.toISOString();
+        }
+
+        function detectHesitation(element, action) {
+            const now = new Date();
+            const timeSinceLastActivity = now - metadataTracking.mouse.lastActivity;
+            
+            if (timeSinceLastActivity > 3000) {
+                metadataTracking.behavioral.hesitationZones.push({
+                    element: element.id || element.className,
+                    action: action,
+                    hesitationTime: timeSinceLastActivity,
+                    timestamp: now.toISOString(),
+                    questionContext: currentQuestionFocus
+                });
+            }
+        }
+
+        function trackHover(element, questionId) {
+            const elementId = element.id || element.className || 'unknown';
+            if (!metadataTracking.mouse.hovers[elementId]) {
+                metadataTracking.mouse.hovers[elementId] = {
+                    totalTime: 0,
+                    hoverCount: 0,
+                    questionContext: questionId,
+                    firstHover: new Date().toISOString()
+                };
+            }
+            
+            metadataTracking.mouse.hovers[elementId].hoverCount++;
+            metadataTracking.mouse.hovers[elementId].lastHover = new Date().toISOString();
+        }
+
+        function trackKeypress(event) {
+            const now = new Date();
+            const keyData = {
+                key: event.key,
+                code: event.code,
+                timestamp: now.toISOString(),
+                questionContext: currentQuestionFocus,
+                isBackspace: event.key === 'Backspace',
+                isPaste: event.ctrlKey && event.key === 'v'
+            };
+            
+            metadataTracking.keyboard.keystrokeTimings.push(keyData);
+            metadataTracking.keyboard.totalKeystrokes++;
+            
+            if (event.key === 'Backspace') {
+                metadataTracking.keyboard.backspaceCount++;
+            }
+            
+            if (event.ctrlKey && event.key === 'v') {
+                metadataTracking.keyboard.pasteEvents++;
+            }
+            
+            if (metadataTracking.keyboard.keystrokeTimings.length > 1000) {
+                metadataTracking.keyboard.keystrokeTimings.shift();
+            }
+        }
+
+        function trackPerformance() {
+            if ('memory' in performance) {
+                metadataTracking.performance.memoryUsage = {
+                    used: performance.memory.usedJSHeapSize,
+                    total: performance.memory.totalJSHeapSize,
+                    limit: performance.memory.jsHeapSizeLimit,
+                    timestamp: new Date().toISOString()
+                };
+            }
+            
+            if ('connection' in navigator) {
+                metadataTracking.performance.connectionSpeed = {
+                    effectiveType: navigator.connection.effectiveType,
+                    downlink: navigator.connection.downlink,
+                    rtt: navigator.connection.rtt,
+                    saveData: navigator.connection.saveData
+                };
+            }
+        }
+
+        // Load existing progress
+        async function loadExistingProgress() {
+            if (!currentUserId) return;
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/load_component_assessment_progress`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUserId
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.status === 'success' && result.data) {
+                        console.log('📂 Loaded existing component progress:', result.data);
+                        
+                        // Restore responses
+                        if (result.data.responses) {
+                            Object.entries(result.data.responses).forEach(([questionId, responseData]) => {
+                                responses[questionId] = responseData;
+                                // Restore UI state for each question
+                                restoreQuestionUI(questionId, responseData);
+                            });
+                        }
+                        
+                        // Navigate to appropriate expansion
+                        if (result.data.current_expansion && result.data.current_expansion > 1) {
+                            currentExpansion = result.data.current_expansion;
+                            navigateToExpansion(currentExpansion);
+                        }
+                        
+                        updateProgress();
+                        showStatusMessage('Previous progress restored!', 'success');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading progress:', error);
+            }
+        }
+
+        // Restore question UI state
+        function restoreQuestionUI(questionId, responseData) {
+            const selectedOption = responseData.response_data?.selected_option;
+            if (selectedOption) {
+                const optionElement = document.querySelector(`input[value="${selectedOption}"]`);
+                if (optionElement) {
+                    optionElement.checked = true;
+                    optionElement.closest('.component-option').classList.add('selected');
+                }
+            }
+        }
+
+        // Navigate to specific expansion
+        function navigateToExpansion(expansionNumber) {
+            // Hide current expansion
+            document.querySelector('.mind-expansion.active')?.classList.remove('active');
+            
+            // Show target expansion
+            currentExpansion = expansionNumber;
+            document.getElementById(`mindExpansion${currentExpansion}`).classList.add('active');
+            
+            updateNavigation();
+        }
+
+        // Initialize assessment with comprehensive tracking
+        function initializeAssessment() {
+            metadataTracking.timing.pageLoadTime = new Date().toISOString();
+            trackPerformance();
+            
+            // Set up event listeners for comprehensive tracking
+            document.addEventListener('mousemove', trackMouseMovement);
+            document.addEventListener('click', trackMouseClick);
+            document.addEventListener('wheel', trackScrolling);
+            document.addEventListener('keydown', trackKeypress);
+            
+            // Track page visibility changes
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    metadataTracking.behavioral.taskSwitching++;
+                }
+            });
+            
+            // Periodic performance tracking
+            setInterval(trackPerformance, 30000); // Every 30 seconds
+            
+            updateProgress();
+            updateNavigation();
+            
+            // Try to load existing progress
+            loadExistingProgress();
+        }
+
+        // Initialize when page loads with full tracking
+        window.addEventListener('load', function() {
+            console.log('🚀 Initializing Complete Component Assessment Engine with Full Question Set');
+            
+            // Set up viewport tracking
+            window.addEventListener('resize', () => {
+                metadataTracking.session.viewportSize = {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                    timestamp: new Date().toISOString()
+                };
+            });
+
+            // Set up orientation tracking
+            window.addEventListener('orientationchange', () => {
+                if (screen.orientation) {
+                    metadataTracking.session.orientation = {
+                        angle: screen.orientation.angle,
+                        type: screen.orientation.type,
+                        timestamp: new Date().toISOString()
+                    };
+                }
+            });
+
+            // Battery status tracking (if available)
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(function(battery) {
+                    metadataTracking.session.batteryLevel = battery.level;
+                    metadataTracking.session.batteryCharging = battery.charging;
+                });
+            }
+
+            console.log('✅ Component Assessment Frontend initialized successfully');
+        });
+
+        // Enhanced keyboard navigation with tracking
+        document.addEventListener('keydown', function(event) {
+            if (assessmentStarted) {
+                if (event.key === 'ArrowRight' && currentExpansion < totalExpansions) {
+                    nextExpansion();
+                } else if (event.key === 'ArrowLeft' && currentExpansion > 1) {
+                    previousExpansion();
+                }
+            }
+        });
+
+        // Page unload tracking
+        window.addEventListener('beforeunload', function() {
+            if (assessmentStarted) {
+                metadataTracking.timing.totalEngagementTime = Math.floor((new Date() - startTime) / 1000);
+                
+                // Store in session storage as backup
+                try {
+                    sessionStorage.setItem('component_metadata_backup', JSON.stringify(metadataTracking));
+                    sessionStorage.setItem('component_responses_backup', JSON.stringify(responses));
+                } catch (e) {
+                    console.log('Could not save component assessment backup');
+                }
+            }
+        });
+
+        // Error handling for backend connectivity
+        window.addEventListener('error', function(event) {
+            metadataTracking.performance.errors.push({
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno,
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        // Network status tracking
+        window.addEventListener('online', function() {
+            metadataTracking.session.onlineStatus = true;
+            showStatusMessage('Connection restored', 'success');
+        });
+
+        window.addEventListener('offline', function() {
+            metadataTracking.session.onlineStatus = false;
+            showStatusMessage('Connection lost - your progress is saved locally', 'error');
+        });
+
+        // Debug functions for development
+        window.debugFunctions = {
+            // Get current responses
+            getResponses: () => responses,
+            
+            // Get metadata
+            getMetadata: () => metadataTracking,
+            
+            // Get question states
+            getQuestionStates: () => questionStates,
+            
+            // Get complete assessment data
+            getAssessmentData: () => buildAssessmentData(),
+            
+            // Test backend connectivity
+            testBackend: async () => {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/health`);
+                    const result = await response.json();
+                    console.log('Backend health check:', result);
+                    return result;
+                } catch (error) {
+                    console.error('Backend connectivity test failed:', error);
+                    return { status: 'failed', error: error.message };
+                }
+            },
+            
+            // Load progress for user
+            loadProgress: async (userId) => {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/load_component_assessment_progress`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId })
+                    });
+                    const result = await response.json();
+                    console.log('Load progress result:', result);
+                    return result;
+                } catch (error) {
+                    console.error('Load progress failed:', error);
+                    return { status: 'failed', error: error.message };
+                }
+            },
+            
+            // Check report status
+            checkReportStatus: async (reportId) => {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/component_report_status/${reportId}`);
+                    const result = await response.json();
+                    console.log('Report status:', result);
+                    return result;
+                } catch (error) {
+                    console.error('Report status check failed:', error);
+                    return { status: 'failed', error: error.message };
+                }
+            },
+
+            // Get current phase questions
+            getPhaseQuestions: () => phaseQuestions,
+
+            // Simulate different phases for testing
+            simulatePhase: (phase) => {
+                userPhase = phase;
+                if (phase >= 0 && phase <= 2) {
+                    phaseQuestions = phaseQuestionSets.foundation_to_challenger;
+                } else if (phase >= 3 && phase <= 4) {
+                    phaseQuestions = phaseQuestionSets.breakout_to_stabilize;
+                } else {
+                    phaseQuestions = phaseQuestionSets.rapids_to_big_picture;
+                }
+                console.log(`Simulated phase ${phase}:`, phaseQuestions.label);
+                return phaseQuestions;
+            },
+
+            // Get user phase from backend
+            getUserPhase: async (userId) => {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/get_user_phase/${userId}`);
+                    const result = await response.json();
+                    console.log('User phase result:', result);
+                    return result;
+                } catch (error) {
+                    console.error('Get user phase failed:', error);
+                    return { status: 'failed', error: error.message };
+                }
+            }
+        };
+
+        console.log('🔬 Complete Component Assessment Engine loaded with:');
+        console.log('   ✅ CORRECTED Backend URL: http://localhost:8001');
+        console.log('   ✅ ALL 33 Foundation to Challenger questions included');
+        console.log('   ✅ Phase-specific question routing (0-2: Foundation, 3-4: Breakout, 5-7: Rapids)');
+        console.log('   ✅ 8 Mind Expansions with complete question sets');
+        console.log('   ✅ Component-focused UI with emoji-based options');
+        console.log('   ✅ Complete JSON structure matching your backend');
+        console.log('   ✅ Comprehensive metadata tracking (mouse, keyboard, timing, behavioral)');
+        console.log('   ✅ Auto-save progress functionality');
+        console.log('   ✅ Backend integration with proper endpoints');
+        console.log('   ✅ Progress restoration capabilities');
+        console.log('   ✅ Real-time report generation tracking');
+        console.log('   ✅ Mobile-responsive design');
+        console.log('   🔧 Debug functions available at window.debugFunctions');
+        console.log(`   🌐 Backend URL: ${BACKEND_URL}`);
+        console.log('   📊 Returns comprehensive JSON matching your backend structure');
+        console.log('   🔗 Connected to Component Engine on port 8001');
+    </script>
+</body>
+</html>

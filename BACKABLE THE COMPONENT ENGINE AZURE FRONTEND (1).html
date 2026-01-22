@@ -1876,27 +1876,38 @@
 
         // Start assessment function
         async function startAssessment() {
-            const userIdInput = document.getElementById('userIdInput');
-            const userId = userIdInput.value.trim();
-            
-            if (!userId) {
-                alert('Please enter your User ID to continue.');
+            // Get JWT token from input or localStorage
+            const jwtTokenInput = document.getElementById('jwtTokenInput');
+            const enteredToken = jwtTokenInput ? jwtTokenInput.value.trim() : '';
+            const localStorageToken = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+            const tokenToUse = enteredToken || localStorageToken;
+
+            if (!tokenToUse) {
+                alert('🔒 Please enter a JWT token or login to backable.ai first.');
                 return;
             }
-            
-            if (userId.length < 3) {
-                alert('User ID must be at least 3 characters long.');
-                return;
-            }
-            
-            // Set global user ID
-            currentUserId = userId;
-            
+
+            // Set active session token
+            ACTIVE_SESSION_TOKEN = tokenToUse;
+            console.log('🔑 JWT token loaded');
+
             try {
+                // Call /auth/me to get authenticated user info
+                const authResponse = await authenticatedFetch(`${BACKEND_URL}/auth/me`);
+
+                if (!authResponse.ok) {
+                    throw new Error(`Authentication failed: ${authResponse.status}`);
+                }
+
+                const authData = await authResponse.json();
+                currentUserId = authData.user_id;  // Extract user_id from backend JWT validation
+
+                console.log('✅ Authenticated as User ID:', currentUserId);
+
                 // ✅ Fetch user phase from backend (corrected endpoint)
-                console.log('🔄 Fetching user phase from:', `${BACKEND_URL}/get_user_phase/${userId}`);
-                
-                const response = await authenticatedFetch(`${BACKEND_URL}/get_user_phase/${userId}`);
+                console.log('🔄 Fetching user phase from:', `${BACKEND_URL}/get_user_phase/${currentUserId}`);
+
+                const response = await authenticatedFetch(`${BACKEND_URL}/get_user_phase/${currentUserId}`);
                 if (response.ok) {
                     const result = await response.json();
                     console.log('✅ User phase result:', result);

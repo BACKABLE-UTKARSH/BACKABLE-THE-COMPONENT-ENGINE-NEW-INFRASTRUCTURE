@@ -407,8 +407,8 @@
         <div class="user-input-section" id="userInputSection">
             <h2>🚀 Let's Assess Your Business Components</h2>
             <div class="user-input-field">
-                <label for="userIdInput">Enter Your User ID:</label>
-                <input type="text" id="userIdInput" placeholder="e.g., john_doe_123 or your email" required>
+                <label for="jwtTokenInput">🔑 JWT Token (for testing, or will auto-load from backable.ai login):</label>
+                <textarea id="jwtTokenInput" placeholder="Paste your JWT token here for testing..." rows="4" style="width: 100%; padding: 12px; border: 2px solid #667eea; border-radius: 10px; font-family: monospace; font-size: 0.9em; resize: vertical;"></textarea>
             </div>
             <button class="start-button" onclick="startAssessment()">Start My Component Assessment</button>
         </div>
@@ -452,11 +452,12 @@
     </div>
 
     <script>
-        // ✅ CORRECTED BACKEND URL - Your backend runs on port 8001
-       const BACKEND_URL = 'https://backable-component-engine.azurewebsites.net';
-        
+        // ✅ AZURE BACKEND URL - Component Engine New Infrastructure
+       const BACKEND_URL = 'https://backable-component-engine-new.azurewebsites.net';
+
         // Global variables
         let currentUserId = null;
+        let ACTIVE_SESSION_TOKEN = null;  // JWT token for authentication
         let assessmentStarted = false;
         let currentExpansion = 1;
         let totalExpansions = 8;
@@ -528,6 +529,20 @@
                 errors: []
             }
         };
+
+        // Authenticated fetch wrapper
+        async function authenticatedFetch(url, options = {}) {
+            if (!ACTIVE_SESSION_TOKEN) {
+                throw new Error('No active session token. Please enter JWT token or login to backable.ai first.');
+            }
+
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${ACTIVE_SESSION_TOKEN}`
+            };
+
+            return fetch(url, options);
+        }
 
         // COMPLETE PHASE-SPECIFIC QUESTION DEFINITIONS
         const phaseQuestionSets = {
@@ -1881,7 +1896,7 @@
                 // ✅ Fetch user phase from backend (corrected endpoint)
                 console.log('🔄 Fetching user phase from:', `${BACKEND_URL}/get_user_phase/${userId}`);
                 
-                const response = await fetch(`${BACKEND_URL}/get_user_phase/${userId}`);
+                const response = await authenticatedFetch(`${BACKEND_URL}/get_user_phase/${userId}`);
                 if (response.ok) {
                     const result = await response.json();
                     console.log('✅ User phase result:', result);
@@ -2231,7 +2246,7 @@
             try {
                 const progressData = buildAssessmentData();
                 
-                const response = await fetch(`${BACKEND_URL}/component_assessment_progress`, {
+                const response = await authenticatedFetch(`${BACKEND_URL}/component_assessment_progress`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2461,7 +2476,7 @@
                 console.log('📊 COMPLETE COMPONENT ASSESSMENT DATA WITH FULL METADATA:', JSON.stringify(assessmentData, null, 2));
                 
                 // ✅ Correct endpoint for component audit
-                const response = await fetch(`${BACKEND_URL}/component-audit/${currentUserId}/${userPhase}`, {
+                const response = await authenticatedFetch(`${BACKEND_URL}/component-audit/${currentUserId}/${userPhase}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2507,7 +2522,7 @@
         async function pollReportStatus(reportId) {
             const statusInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`${BACKEND_URL}/component_report_status/${reportId}`);
+                    const response = await authenticatedFetch(`${BACKEND_URL}/component_report_status/${reportId}`);
                     
                     if (response.ok) {
                         const result = await response.json();
@@ -2718,7 +2733,7 @@
             if (!currentUserId) return;
             
             try {
-                const response = await fetch(`${BACKEND_URL}/load_component_assessment_progress`, {
+                const response = await authenticatedFetch(`${BACKEND_URL}/load_component_assessment_progress`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2922,7 +2937,7 @@
             // Load progress for user
             loadProgress: async (userId) => {
                 try {
-                    const response = await fetch(`${BACKEND_URL}/load_component_assessment_progress`, {
+                    const response = await authenticatedFetch(`${BACKEND_URL}/load_component_assessment_progress`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ user_id: userId })
@@ -2939,7 +2954,7 @@
             // Check report status
             checkReportStatus: async (reportId) => {
                 try {
-                    const response = await fetch(`${BACKEND_URL}/component_report_status/${reportId}`);
+                    const response = await authenticatedFetch(`${BACKEND_URL}/component_report_status/${reportId}`);
                     const result = await response.json();
                     console.log('Report status:', result);
                     return result;
@@ -2969,7 +2984,7 @@
             // Get user phase from backend
             getUserPhase: async (userId) => {
                 try {
-                    const response = await fetch(`${BACKEND_URL}/get_user_phase/${userId}`);
+                    const response = await authenticatedFetch(`${BACKEND_URL}/get_user_phase/${userId}`);
                     const result = await response.json();
                     console.log('User phase result:', result);
                     return result;

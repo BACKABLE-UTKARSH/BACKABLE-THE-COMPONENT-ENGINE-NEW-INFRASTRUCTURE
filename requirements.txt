@@ -7,6 +7,9 @@ python-multipart==0.0.6
 # Database
 psycopg2-binary==2.9.9
 
+# Authentication
+PyJWT==2.8.0
+
 # Azure
 azure-storage-blob==12.19.0
 

@@ -20,10 +20,13 @@ import io
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
-from fastapi import FastAPI, Request, Response, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Request, Response, HTTPException, BackgroundTasks, Depends, Header, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
+import jwt
+import hashlib
+from psycopg2.extras import RealDictCursor
 from azure.storage.blob import BlobServiceClient, ContainerClient, ContentSettings
 import psycopg2
 import uvicorn
@@ -11378,10 +11381,214 @@ app = FastAPI(
 )
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+# ======================================================
+#           JWT AUTHENTICATION CONFIGURATION
+# ======================================================
+
+# JWT Secret Key - must match the key used by philotimo-backend
+JWT_SECRET = os.getenv("JWT_SECRET", "philotimo-global-jwt-secret-2024!!")  # Production JWT secret
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+
+def hash_token(token: str) -> str:
+    """Hash a JWT token using SHA256 for database comparison"""
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+async def verify_jwt_token(authorization: str = Header(None)) -> Dict:
+    """
+    Verify JWT token from Authorization header and validate against database
+
+    Returns:
+        Dict containing: user_id, client_id, email, jti
+
+    Raises:
+        HTTPException: If token is invalid, expired, or revoked
+    """
+
+    # Check if Authorization header is present
+    if not authorization:
+        logging.warning("🔒 Missing authorization header")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing authorization header",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    # Extract token from "Bearer <token>" format
+    try:
+        parts = authorization.split()
+        if len(parts) != 2:
+            raise ValueError("Invalid format")
+
+        scheme, token = parts
+        if scheme.lower() != 'bearer':
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication scheme. Use 'Bearer'",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+    except (ValueError, AttributeError) as e:
+        logging.warning(f"🔒 Invalid authorization header format: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authorization header format. Expected: 'Bearer <token>'",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    try:
+        # Decode and validate JWT token
+        payload = jwt.decode(
+            token,
+            JWT_SECRET,
+            algorithms=[JWT_ALGORITHM],
+            options={"verify_exp": True}
+        )
+
+        # Extract user_id and jti from payload
+        user_id = payload.get('user_id') or payload.get('sub')
+        jti = payload.get('jti')
+
+        if not user_id:
+            logging.error("🔒 Token missing user_id or sub claim")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: missing user identifier"
+            )
+
+        if not jti:
+            logging.error("🔒 Token missing jti claim")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: missing JWT ID"
+            )
+
+        # Validate token against database
+        conn = None
+        try:
+            conn = psycopg2.connect(**USER_DB_CONFIG)
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+
+            # Hash the token for secure comparison
+            token_hash = hash_token(token)
+
+            # Query token and user information
+            cur.execute("""
+                SELECT
+                    t.user_id,
+                    t.is_revoked,
+                    t.expires_at,
+                    u.client_id,
+                    u.email
+                FROM api_tokens t
+                JOIN users u ON t.user_id = u.id
+                WHERE t.jti = %s AND t.token_hash = %s
+            """, (jti, token_hash))
+
+            result = cur.fetchone()
+
+            if not result:
+                logging.warning(f"🔒 Token not found in database. JTI: {jti}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token not found or invalid"
+                )
+
+            # Check if token is revoked
+            if result['is_revoked']:
+                logging.warning(f"🔒 Revoked token attempt. User: {result['user_id']}, JTI: {jti}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token has been revoked"
+                )
+
+            # Check if token is expired (database-level check)
+            if result['expires_at'] and result['expires_at'] < datetime.now(result['expires_at'].tzinfo):
+                logging.warning(f"🔒 Expired token. User: {result['user_id']}, JTI: {jti}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token has expired"
+                )
+
+            # Verify user_id matches
+            if str(result['user_id']) != str(user_id):
+                logging.error(f"🔒 User ID mismatch. Token: {user_id}, DB: {result['user_id']}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token user mismatch"
+                )
+
+            # Update last_used_at timestamp
+            cur.execute("""
+                UPDATE api_tokens
+                SET last_used_at = NOW()
+                WHERE jti = %s
+            """, (jti,))
+            conn.commit()
+
+            cur.close()
+
+            logging.info(f"✅ Token validated. User: {user_id}, Client: {result['client_id']}, JTI: {jti}")
+
+            # Return authentication context
+            return {
+                "user_id": result['user_id'],
+                "client_id": result['client_id'],
+                "email": result['email'],
+                "jti": jti
+            }
+
+        finally:
+            if conn:
+                conn.close()
+
+    except jwt.ExpiredSignatureError:
+        logging.warning("🔒 JWT token expired")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired"
+        )
+    except jwt.InvalidTokenError as e:
+        logging.warning(f"🔒 Invalid JWT token: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid token: {str(e)}"
+        )
+    except psycopg2.Error as e:
+        logging.error(f"🔒 Database error during token validation: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Authentication service error"
+        )
+
+# ======================================================
+#                  AUTHENTICATION ENDPOINTS
+# ======================================================
+
+@app.get("/auth/me")
+async def get_authenticated_user(auth: Dict = Depends(verify_jwt_token)):
+    """
+    Get authenticated user information from JWT token
+    This endpoint allows the frontend to verify authentication and get user_id
+    """
+    return {
+        "status": "success",
+        "user_id": str(auth["user_id"]),
+        "client_id": auth.get("client_id"),
+        "email": auth.get("email"),
+        "authenticated": True
+    }
+
 @app.get("/get_user_phase/{user_id}")
-async def get_user_phase(user_id: str):
+async def get_user_phase(user_id: str, auth: Dict = Depends(verify_jwt_token)):
     """Get user phase based on team size"""
     try:
+        # Permission check: ensure authenticated user matches requested user_id
+        if int(user_id) != auth["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only access your own phase information"
+            )
+
         user_profile = get_user_profile_data(user_id)
         
         if not user_profile:
@@ -11427,9 +11634,16 @@ async def get_user_phase(user_id: str):
         }
 
 @app.post("/component-audit/{user_id}/{phase}")
-async def component_audit(user_id: str, phase: int, request: ComponentAssessmentRequest, background_tasks: BackgroundTasks):
+async def component_audit(user_id: str, phase: int, request: ComponentAssessmentRequest, background_tasks: BackgroundTasks, auth: Dict = Depends(verify_jwt_token)):
     """Generate Comprehensive Component Audit Report"""
     try:
+        # Permission check: ensure authenticated user matches requested user_id
+        if int(user_id) != auth["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only generate component audits for your own user ID"
+            )
+
         complete_raw_data = request.assessment_data
         
         # Create unique report ID
@@ -11665,7 +11879,7 @@ def generate_component_comprehensive_background(user_id: str, complete_raw_data:
         }
 
 @app.get("/component_report_status/{report_id}")
-async def get_component_report_status(report_id: str):
+async def get_component_report_status(report_id: str, auth: Dict = Depends(verify_jwt_token)):
     """Check the status of comprehensive component report generation"""
     try:
         # Check in-memory tracker first
@@ -11770,10 +11984,18 @@ async def get_component_report_status(report_id: str):
         }
 
 @app.post("/component_assessment_progress")
-async def component_assessment_progress(request: ComponentProgressRequest):
+async def component_assessment_progress(request: ComponentProgressRequest, auth: Dict = Depends(verify_jwt_token)):
     """Save or load component assessment progress"""
     try:
         user_id = request.user_id
+
+        # Permission check: ensure authenticated user matches requested user_id
+        if int(user_id) != auth["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only save your own assessment progress"
+            )
+
         assessment_data = request.assessment_data
         current_expansion = request.current_expansion
         
@@ -11800,10 +12022,17 @@ async def component_assessment_progress(request: ComponentProgressRequest):
         }
 
 @app.post("/load_component_assessment_progress")
-async def load_component_assessment_progress(request: ComponentProgressLoadRequest):
+async def load_component_assessment_progress(request: ComponentProgressLoadRequest, auth: Dict = Depends(verify_jwt_token)):
     """Load user's saved component assessment progress"""
     try:
         user_id = request.user_id
+
+        # Permission check: ensure authenticated user matches requested user_id
+        if int(user_id) != auth["user_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only load your own assessment progress"
+            )
         
         logging.info(f"📂 Loading component progress for user_id={user_id}")
         
@@ -11919,8 +12148,14 @@ def get_total_questions_for_phase(phase):
         return 72  # Rapids to Big Picture
 
 @app.get("/user_component_assessments/{user_id}")
-async def get_user_component_assessments(user_id: str):
+async def get_user_component_assessments(user_id: str, auth: Dict = Depends(verify_jwt_token)):
     """Get all component assessments and reports for a specific user"""
+    # Permission check: ensure authenticated user matches requested user_id
+    if int(user_id) != auth["user_id"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only access your own component assessments"
+        )
     try:
         conn = get_component_connection()
         
@@ -11999,8 +12234,14 @@ async def get_user_component_assessments(user_id: str):
             conn.close()
 
 @app.get("/component_assessment_raw_details/{user_id}")
-async def get_component_assessment_raw_details(user_id: str):
+async def get_component_assessment_raw_details(user_id: str, auth: Dict = Depends(verify_jwt_token)):
     """Get complete raw component assessment data including all behavioral analytics"""
+    # Permission check: ensure authenticated user matches requested user_id
+    if int(user_id) != auth["user_id"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only access your own component assessment details"
+        )
     try:
         conn = get_component_connection()
         
@@ -12092,8 +12333,14 @@ async def get_component_assessment_raw_details(user_id: str):
             conn.close()
 
 @app.delete("/clear_component_user_progress/{user_id}")
-async def clear_component_user_progress(user_id: str):
+async def clear_component_user_progress(user_id: str, auth: Dict = Depends(verify_jwt_token)):
     """Clear all saved component progress for a user (start fresh)"""
+    # Permission check: ensure authenticated user matches requested user_id
+    if int(user_id) != auth["user_id"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only clear your own component progress"
+        )
     try:
         conn = get_component_connection()
         
